@@ -32,6 +32,7 @@ import io.anserini.rerank.lib.Rm3Reranker;
 import io.anserini.rerank.lib.ScoreTiesAdjusterReranker;
 import io.anserini.search.query.BagOfWordsQueryGenerator;
 import io.anserini.search.query.SdmQueryGenerator;
+import io.anserini.search.query.SparseReprQueryGenerator;
 import io.anserini.search.similarity.AccurateBM25Similarity;
 import io.anserini.search.similarity.TaggedSimilarity;
 import io.anserini.search.topicreader.BackgroundLinkingTopicReader;
@@ -124,7 +125,8 @@ public final class SearchCollection implements Closeable {
 
   public enum QueryConstructor {
     BagOfTerms,
-    SequentialDependenceModel
+    SequentialDependenceModel,
+    SparseRepresentation
   }
 
   private final QueryConstructor qc;
@@ -256,6 +258,9 @@ public final class SearchCollection implements Closeable {
     if (args.sdm) {
       LOG.info("QueryConstructor: SequentialDependenceModel");
       qc = QueryConstructor.SequentialDependenceModel;
+    } else if (args.sr) {
+      LOG.info("QueryConstructor: SparseRepresenation");
+      qc = QueryConstructor.SparseRepresentation;
     } else {
       LOG.info("QueryConstructor: BagOfTerms");
       qc = QueryConstructor.BagOfTerms;
@@ -450,6 +455,8 @@ public final class SearchCollection implements Closeable {
     Query query = null;
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+    } else if (qc == QueryConstructor.SparseRepresentation) {
+      query = new SparseReprQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }

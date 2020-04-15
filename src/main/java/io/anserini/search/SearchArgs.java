@@ -185,6 +185,9 @@ public class SearchArgs {
   @Option(name = "-sdm", usage = "boolean switch to use Sequential Dependence Model query")
   public boolean sdm = false;
 
+  @Option(name = "-sr", usage = "boolean switch to use Sparse Representation query")
+  public boolean sr = false;
+
   @Option(name = "-sdm.tw", metaVar = "[value]", usage = "SDM term weight")
   public float sdm_tw = 0.85f;
 
