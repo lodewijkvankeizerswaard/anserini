@@ -55,8 +55,6 @@ public class SparseReprQueryGenerator  extends QueryGenerator {
 
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
-      // TODO - implement the random python implementation above
-      // this is the BagOfWords implementation
       List<String> tokens = AnalyzerUtils.analyze(analyzer, queryText);
     
       BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -67,7 +65,7 @@ public class SparseReprQueryGenerator  extends QueryGenerator {
       return builder.build();
     }
 
-    public Vector buildVector(String query) {
+    public Vector buildVector(Query query) {
       Vector vec = new Vector(this.dimensions);
 
       for (int i = 0; i < this.dimensions; i++) {

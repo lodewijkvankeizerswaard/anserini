@@ -34,6 +34,7 @@ import io.anserini.search.query.BagOfWordsQueryGenerator;
 import io.anserini.search.query.SdmQueryGenerator;
 import io.anserini.search.query.SparseReprQueryGenerator;
 import io.anserini.search.similarity.AccurateBM25Similarity;
+import io.anserini.search.similarity.SparseRepresentationSimilarity;
 import io.anserini.search.similarity.TaggedSimilarity;
 import io.anserini.search.topicreader.BackgroundLinkingTopicReader;
 import io.anserini.search.topicreader.TopicReader;
@@ -103,6 +104,9 @@ import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import java.util.Vector;
+import io.anserini.search.similarity.SparseRepresentationSimilarity;
 
 /**
  * Main entry point for search.
@@ -321,6 +325,8 @@ public final class SearchCollection implements Closeable {
       for (String s : args.f2log_s) {
         similarities.add(new TaggedSimilarity(new AxiomaticF2LOG(Float.valueOf(s)), String.format("f2log(s=%s)", s)));
       }
+    } else if (args.sr) {
+      similarities.add(new TaggedSimilarity(new SparseRepresentationSimilarity(), "sr"));
     } else {
       throw new IllegalArgumentException("Error: Must specify scoring model!");
     }
@@ -433,7 +439,7 @@ public final class SearchCollection implements Closeable {
           LOG.info("Run already exists, skipping: " + outputPath);
           continue;
         }
-        executor.execute(new SearcherThread<>(reader, topics, taggedSimilarity, cascade, outputPath, runTag));
+        executor.execute(new SearcherThread<>(this.reader, topics, taggedSimilarity, cascade, outputPath, runTag));
       }
     }
     executor.shutdown();
@@ -453,10 +459,13 @@ public final class SearchCollection implements Closeable {
   public <K> ScoredDocuments search(IndexSearcher searcher, K qid, String queryString, RerankerCascade cascade)
       throws IOException {
     Query query = null;
+    Vector queryVec = new Vector();
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
-      query = new SparseReprQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      SparseReprQueryGenerator SparseGen = new SparseReprQueryGenerator();
+      query = SparseGen.buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      queryVec = SparseGen.buildVector(query);
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }
