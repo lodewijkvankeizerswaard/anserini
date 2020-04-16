@@ -26,6 +26,9 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import java.util.Vector;
+import java.util.Random;
+
 // PYTHON IMPLEMENTATION
 // def get_sparse_representation(data, dim=1000, sparsity_ratio=0.9):
 //     rand = np.random.uniform(0, 1, size=(len(data), dim))
@@ -36,15 +39,18 @@ import java.util.List;
 public class SparseReprQueryGenerator  extends QueryGenerator {
     private final int dimensions;
     private final float sparsity_ratio;
+    private Random random;
 
     public SparseReprQueryGenerator() {
-      this.dimensions = 1000;
+      this.dimensions = 10000;
       this.sparsity_ratio = (float) 0.9;
+      this.random = new Random();
     }
 
     public SparseReprQueryGenerator(int dim, float sparsity) {
       this.dimensions = dim;
       this.sparsity_ratio = sparsity;
+      this.random = new Random();
     }
 
     @Override
@@ -59,5 +65,15 @@ public class SparseReprQueryGenerator  extends QueryGenerator {
       }
     
       return builder.build();
+    }
+
+    public Vector buildVector(String query) {
+      Vector vec = new Vector(this.dimensions);
+
+      for (int i = 0; i < this.dimensions; i++) {
+        vec.add(i, this.random.nextFloat());
+      }
+
+      return vec;
     }
   }
