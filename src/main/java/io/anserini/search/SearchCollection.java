@@ -32,9 +32,7 @@ import io.anserini.rerank.lib.Rm3Reranker;
 import io.anserini.rerank.lib.ScoreTiesAdjusterReranker;
 import io.anserini.search.query.BagOfWordsQueryGenerator;
 import io.anserini.search.query.SdmQueryGenerator;
-import io.anserini.search.query.SparseReprQueryGenerator;
 import io.anserini.search.similarity.AccurateBM25Similarity;
-import io.anserini.search.similarity.SparseRepresentationSimilarity;
 import io.anserini.search.similarity.TaggedSimilarity;
 import io.anserini.search.topicreader.BackgroundLinkingTopicReader;
 import io.anserini.search.topicreader.TopicReader;
@@ -107,6 +105,8 @@ import java.util.concurrent.TimeUnit;
 
 import java.util.Vector;
 import io.anserini.search.similarity.SparseRepresentationSimilarity;
+import io.anserini.search.latent.SparseReprQueryGenerator;
+import io.anserini.search.latent.SparseLatentQuery;
 
 /**
  * Main entry point for search.
@@ -463,9 +463,8 @@ public final class SearchCollection implements Closeable {
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
-      SparseReprQueryGenerator SparseGen = new SparseReprQueryGenerator();
-      query = SparseGen.buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
-      queryVec = SparseGen.buildVector(query);
+      query = new SparseReprQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      LOG.info(query.toString());
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }
