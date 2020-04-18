@@ -24,10 +24,14 @@ import io.anserini.search.query.QueryGenerator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SparseReprQueryGenerator extends QueryGenerator {
+    private static final Logger LOG = LogManager.getLogger(SparseReprQueryGenerator.class);
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
-      return new SparseLatentQuery(queryText);
+      LOG.info("Logging from the generator");
+      return new SparseLatentQuery(queryText, field);
     }
 }

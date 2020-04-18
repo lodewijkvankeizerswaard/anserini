@@ -175,7 +175,9 @@ public final class SearchCollection implements Closeable {
           } else if (args.backgroundlinking) {
             docs = searchBackgroundLinking(this.searcher, qid, queryString, cascade);
           } else {
+            LOG.info("executing search function (searcher, thread_id, queryString, cascade)");
             docs = search(this.searcher, qid, queryString, cascade);
+            LOG.info("search function complete");
           }
 
           /*
@@ -459,7 +461,6 @@ public final class SearchCollection implements Closeable {
   public <K> ScoredDocuments search(IndexSearcher searcher, K qid, String queryString, RerankerCascade cascade)
       throws IOException {
     Query query = null;
-    Vector queryVec = new Vector();
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
@@ -470,11 +471,16 @@ public final class SearchCollection implements Closeable {
     }
 
     TopDocs rs = new TopDocs(new TotalHits(0, TotalHits.Relation.EQUAL_TO), new ScoreDoc[]{});
+    LOG.info("TopDocs initialized!");
     if (!(isRerank && args.rerankcutoff <= 0)) {
       if (args.arbitraryScoreTieBreak) {// Figure out how to break the scoring ties.
+        LOG.info("Initializing search of the searcher: " + searcher.toString());
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits);
+        LOG.info("searcher complete!");
       } else {
+        LOG.info("Initializing search of the searcher: " + searcher.toString());
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits, BREAK_SCORE_TIES_BY_DOCID, true);
+        LOG.info("searcher complete!");
       }
     }
 
