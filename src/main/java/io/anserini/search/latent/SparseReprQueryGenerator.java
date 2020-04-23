@@ -31,7 +31,7 @@ public class SparseReprQueryGenerator extends QueryGenerator {
     private static final Logger LOG = LogManager.getLogger(SparseReprQueryGenerator.class);
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
-      LOG.info("Logging from the generator");
+      LOG.info("Generating query for: " + field + " containing " + queryText);
       return new SparseLatentQuery(queryText, field);
     }
 }
