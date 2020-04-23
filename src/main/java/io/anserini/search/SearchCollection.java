@@ -465,7 +465,6 @@ public final class SearchCollection implements Closeable {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
       query = new SparseReprQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
-      LOG.info(query.toString());
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }
@@ -474,11 +473,11 @@ public final class SearchCollection implements Closeable {
     LOG.info("TopDocs initialized!");
     if (!(isRerank && args.rerankcutoff <= 0)) {
       if (args.arbitraryScoreTieBreak) {// Figure out how to break the scoring ties.
-        LOG.info("Initializing search of the searcher: " + searcher.toString());
+        LOG.info("Initializing search of the searcher");
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits);
         LOG.info("searcher complete!");
       } else {
-        LOG.info("Initializing search of the searcher: " + searcher.toString());
+        LOG.info("Initializing search of the searcher");
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits, BREAK_SCORE_TIES_BY_DOCID, true);
         LOG.info("searcher complete!");
       }
