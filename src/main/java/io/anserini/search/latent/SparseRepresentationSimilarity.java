@@ -25,18 +25,17 @@ import org.apache.lucene.search.similarities.Similarity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class SparseRepresentationSimilarity extends Similarity {
+    private static final Logger LOG = LogManager.getLogger(SparseRepresentationSimilarity.class);
 
     public SparseRepresentationSimilarity() {
-    }
-
-    protected float idf(long docFreq, long docCount) {
-        return (float) Math.log(1 + (docCount - docFreq + 0.5D) / (docFreq + 0.5D));
-    }
-    
-    private float avgFieldLength(CollectionStatistics collectionStats) {
-        return (float) (collectionStats.sumTotalTermFreq() / (double) collectionStats.docCount());
+        LOG.info("[SparseRepresentationSimilarity] Init!");
     }
     
     // Needs to be overridden so is used by the searcher object
@@ -54,10 +53,10 @@ public class SparseRepresentationSimilarity extends Similarity {
     // Needs to be overridden so is used by the searcher object
     @Override
     public final SimScorer scorer(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
-        // Explanation idf = termStats.length == 1 ? idfExplain(collectionStats, termStats[0]) : idfExplain(collectionStats, termStats);
-        float avgdl = avgFieldLength(collectionStats);
+
+        Vector<Float> queryVec = new Vector<Float>(10);
     
-        return new SparRepFixed(boost, avgdl);
+        return new SparRepFixed(boost, queryVec);
     }
     
     // Does not need to be overridden, but i will leave it in for clarity
@@ -65,28 +64,31 @@ public class SparseRepresentationSimilarity extends Similarity {
     public String toString() {
         return "SR using dotproduct";
     }
+
     private static class SparRepFixed extends SimScorer {
     
         private final float boost;
-        private final float avgdl;
+        private final Vector<Float> queryVector;
     
-        /**
-         * weight (idf * boost)
-         */
-        private final float weight;
-    
-        SparRepFixed(float boost, float avgdl) {
+        SparRepFixed(float boost, Vector queryVec) {
           this.boost = boost;
-          this.avgdl = avgdl;
-          this.weight = boost;
-          // Normally avgdl should be >= 1, but let's use Math.max to avoid division by zero just in case
+          this.queryVector = queryVec;
         }
     
         @Override
         public float score(float freq, long norm) {
-          float docLen = norm;
-          float wf = this.weight * freq;
-          return wf;
+          return 5f;
+        }
+
+        public float score(Vector docVec) {
+          assert this.queryVector.size() == docVec.size() : "The number of dimensions of the query vector (" + this.queryVector.size() + ") is not the same as the number dimensions (" + docVec.size() + ") of the document vector.";
+          float dot = 0f;
+
+          for (int i = 0; i < docVec.size(); i++) {
+            dot += (float) queryVector.get(i) * (float) docVec.get(i);
+          }
+          
+          return dot;
         }
     }
 
