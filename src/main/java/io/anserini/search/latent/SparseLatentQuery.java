@@ -51,6 +51,7 @@ public class SparseLatentQuery extends Query{
             super(SparseLatentQuery.this);
             this.similarity = searcher.getSimilarity();
             this.scoreMode = scoreMode;
+            LOG.info("[LatentWeight] scoreMode = " + scoreMode.toString());
             this.termStates = termStates;
             final CollectionStatistics collectionStats;
             final TermStatistics termStats;
@@ -63,19 +64,22 @@ public class SparseLatentQuery extends Query{
                 termStats = new TermStatistics(term.bytes(), 1, 1);
             }
             this.simScorer = this.similarity.scorer(boost, collectionStats, termStats);
-            LOG.info("Latent weight succesfully initialized!");
+            LOG.info("[LatentWeight] simScorer = " + this.simScorer.toString());
         }
 
         @Override
         public Scorer scorer(LeafReaderContext context) throws IOException {
             assert termStates == null || termStates.wasBuiltFor(ReaderUtil.getTopLevelContext(context)) : "The top-reader used to create Weight is not the same as the current reader's top-reader (" + ReaderUtil.getTopLevelContext(context);;
+            
             final TermsEnum termsEnum = getTermsEnum(context);
+            LOG.info("[LatentWeight] terms from context:" + termsEnum.toString());
+
             if (termsEnum == null) {
               return null;
             }
             LeafSimScorer scorer = new LeafSimScorer(simScorer, context.reader(), term.field(), scoreMode.needsScores());
             if (scoreMode == ScoreMode.TOP_SCORES) {
-              return new LatentScorer(this, termsEnum.impacts(PostingsEnum.FREQS), scorer);
+              return new LatentScorer(this, termsEnum.impacts(PostingsEnum.NONE), scorer);
             } else {
               return new LatentScorer(this, termsEnum.postings(null, scoreMode.needsScores() ? PostingsEnum.FREQS : PostingsEnum.NONE), scorer);
             }
@@ -85,9 +89,11 @@ public class SparseLatentQuery extends Query{
             assert termStates != null;
             assert termStates.wasBuiltFor(ReaderUtil.getTopLevelContext(context)) :
                 "The top-reader used to create Weight is not the same as the current reader's top-reader (" + ReaderUtil.getTopLevelContext(context);
+            
             final TermState state = termStates.get(context);
             final TermsEnum termsEnum = context.reader().terms(term.field()).iterator();
-            termsEnum.seekExact(term.bytes(), state);
+            // No idea what this does internally, but it just returns true or false, and it errored so it was disabled.
+            // termsEnum.seekExact(term.bytes(), state);
             return termsEnum;
           }
 
@@ -97,6 +103,11 @@ public class SparseLatentQuery extends Query{
         @Override
         public boolean isCacheable(LeafReaderContext ctx) {
           return true;
+        }
+
+        @Override
+        public String toString() {
+            return termStates.toString();
         }
 
         @Override
@@ -110,17 +121,17 @@ public class SparseLatentQuery extends Query{
     }
 
     public SparseLatentQuery(Term t) {
+        LOG.info("[Query] string: " + t.text() + "field:" + t.field());
         this.perReaderTermState = null;
         this.representation = new Vector<Float>(10);
-        this.random = new Random();
+        this.term = new Term(t.field(), new BytesRef("*".getBytes()));
 
+        // TODO - convert string vector to Vector
+        this.random = new Random();
         for (int i = 0; i < 10; i++) {
           representation.add(i, (float) this.random.nextFloat());
         }
-
-        String repres_str = this.representation.toString();
-
-        this.term = new Term(t.field(), new BytesRef(repres_str.getBytes()));
+        
     }
 
     public Vector getVector() {
@@ -157,6 +168,6 @@ public class SparseLatentQuery extends Query{
 
     @Override
     public int hashCode() {
-        return representation.hashCode();
+        return this.representation.hashCode();
     }
 }
