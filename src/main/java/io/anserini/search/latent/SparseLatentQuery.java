@@ -24,7 +24,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Objects;
 import java.util.Set;
@@ -33,7 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SparseLatentQuery extends Query{
-    private final Vector<Float> representation;
+    private final ArrayList<Float> representation;
     private final Term term;
     private final TermStates perReaderTermState;
     private final Random random;
@@ -51,20 +51,18 @@ public class SparseLatentQuery extends Query{
             super(SparseLatentQuery.this);
             this.similarity = searcher.getSimilarity();
             this.scoreMode = scoreMode;
-            LOG.info("[LatentWeight] scoreMode = " + scoreMode.toString());
             this.termStates = termStates;
             final CollectionStatistics collectionStats;
             final TermStatistics termStats;
             if (scoreMode.needsScores()) {
                 collectionStats = searcher.collectionStatistics(term.field());
-                termStats = termStates.docFreq() > 0 ? searcher.termStatistics(term, termStates.docFreq(), termStates.totalTermFreq()) : null;
+                termStats = new TermStatistics(term.bytes(), 1, 1);
             } else {
                 // we do not need the actual stats, use fake stats with docFreq=maxDoc=ttf=1
                 collectionStats = new CollectionStatistics(term.field(), 1, 1, 1, 1);
                 termStats = new TermStatistics(term.bytes(), 1, 1);
             }
             this.simScorer = this.similarity.scorer(boost, collectionStats, termStats);
-            LOG.info("[LatentWeight] simScorer = " + this.simScorer.toString());
         }
 
         @Override
@@ -72,7 +70,6 @@ public class SparseLatentQuery extends Query{
             assert termStates == null || termStates.wasBuiltFor(ReaderUtil.getTopLevelContext(context)) : "The top-reader used to create Weight is not the same as the current reader's top-reader (" + ReaderUtil.getTopLevelContext(context);;
             
             final TermsEnum termsEnum = getTermsEnum(context);
-            LOG.info("[LatentWeight] terms from context:" + termsEnum.toString());
 
             if (termsEnum == null) {
               return null;
@@ -117,24 +114,19 @@ public class SparseLatentQuery extends Query{
     }
 
     public SparseLatentQuery(String queryString, String fieldString) {
-        this(new Term(fieldString, new BytesRef(queryString.getBytes())));
-    }
-
-    public SparseLatentQuery(Term t) {
-        LOG.info("[Query] string: " + t.text() + "field:" + t.field());
+        LOG.info("[Query] string: " + queryString + "field:" + fieldString);
         this.perReaderTermState = null;
-        this.representation = new Vector<Float>(10);
-        this.term = new Term(t.field(), new BytesRef("*".getBytes()));
-
-        // TODO - convert string vector to Vector
+        this.representation = new ArrayList<Float>(3);
         this.random = new Random();
-        for (int i = 0; i < 10; i++) {
-          representation.add(i, (float) this.random.nextFloat());
+        for (int i = 0; i < 3; i++) {
+            representation.add(i, (float) this.random.nextFloat());
         }
-        
+
+        LOG.info("vector: " + representation.toString());
+        this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
     }
 
-    public Vector getVector() {
+    public ArrayList getRepresentation() {
         return this.representation;
     }
 
@@ -169,5 +161,47 @@ public class SparseLatentQuery extends Query{
     @Override
     public int hashCode() {
         return this.representation.hashCode();
+    }
+
+    public static byte[] vecToBytes(ArrayList<Float> vec) {
+        byte[] f = new byte[4];
+        byte[] v = new byte[4 * vec.size()];
+        for (int i = 0; i < vec.size(); i++) {
+            f = floatToByteArr(vec.get(i));
+
+            for (int j = 0; j < 4; j++) {
+                v[i*4 + j] = f[j];
+            }
+        }
+
+        return v;
+    }
+
+    public static byte[] floatToByteArr(float f) {
+        byte[] fb = new byte[4];
+        int[] intArr = floatToIntArr(f);
+        for (int i = 0; i < 4; i ++) {
+            fb[i] = (byte) intArr[i];
+        }
+        return fb;
+    }
+      
+    public static int[] floatToIntArr(float f) {
+        final int i = Float.floatToIntBits(f);
+        return new int[] { i >>> 030, i >> 020 & 0xff, i >> 010 & 0xff, i & 0xff };
+    }
+      
+    public static final float byteArrToFloat(byte... b) {
+        assert b != null : "bytes to Float conversion failed (invalid bytes)";
+        int[] fb = new int[4];
+        for (int i = 0; i < 4; i++) {
+            fb[i] = (int) b[i];
+        }
+        return intArrToFloat(fb);
+    }
+      
+    public static float intArrToFloat(int... i) {
+        assert i == null && i.length < 4 : "Float to Int conversion failed (invalid integers)";
+        return Float.intBitsToFloat( i[0] << 030 | (i[1] << 020 & 0x00ff0000) | (i[2] << 010 & 0x0000ff00) | (i[3] & 0x000000ff));
     }
 }
