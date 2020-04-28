@@ -26,6 +26,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,8 +54,16 @@ public class SparseRepresentationSimilarity extends Similarity {
     // Needs to be overridden so is used by the searcher object
     @Override
     public final SimScorer scorer(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+        Objects.requireNonNull(termStats);
+        if (termStats.length > 1) {
+            LOG.warn("[SparseSim] More than one termstatistic was passed (only one handledl)!");
+        }
+        TermStatistics ts = termStats[0];
+        LOG.info("[SparseSim] scorer: " + collectionStats.toString() + " \t termStats: " + ts.term().toString());
 
-        Vector<Float> queryVec = new Vector<Float>(10);
+        ArrayList<Float> queryVec = new ArrayList<Float>(3);
+
+        queryVec = bytesToVec(ts.term().bytes);
     
         return new SparRepFixed(boost, queryVec);
     }
@@ -65,23 +74,51 @@ public class SparseRepresentationSimilarity extends Similarity {
         return "SR using dotproduct";
     }
 
+    public static ArrayList<Float> bytesToVec(byte[] b) {
+      int flArrLen = (int) b.length / 4;
+      ArrayList<Float> l = new ArrayList<Float>(flArrLen);
+
+      for (int i = 0; i < b.length; i+=4) {
+        float f = byteArrToFloat(b[i], b[i+1], b[i+2], b[i+3]);
+        l.add(f);
+      }
+      return l;
+    }
+
+    public static final float byteArrToFloat(byte... b) {
+      assert b != null : "bytes to Float conversion failed (invalid bytes)";
+      int[] fb = new int[4];
+      for (int i = 0; i < 4; i++) {
+          fb[i] = (int) b[i];
+      }
+      return intArrToFloat(fb);
+    }
+    
+    public static float intArrToFloat(int... i) {
+      assert i == null && i.length < 4 : "Float to Int conversion failed (invalid integers)";
+      return Float.intBitsToFloat( i[0] << 030 | (i[1] << 020 & 0x00ff0000) | (i[2] << 010 & 0x0000ff00) | (i[3] & 0x000000ff));
+    }
+
     private static class SparRepFixed extends SimScorer {
     
         private final float boost;
-        private final Vector<Float> queryVector;
+        private final ArrayList<Float> queryVector;
     
-        SparRepFixed(float boost, Vector queryVec) {
+        SparRepFixed(float boost, ArrayList<Float> queryVec) {
+          LOG.info("[Scorer object] init: " +  queryVec.toString());
           this.boost = boost;
           this.queryVector = queryVec;
         }
     
         @Override
         public float score(float freq, long norm) {
-          return 5f;
+          LOG.info("[Score] 1f");
+          return 1f;
         }
 
-        public float score(Vector docVec) {
-          assert this.queryVector.size() == docVec.size() : "The number of dimensions of the query vector (" + this.queryVector.size() + ") is not the same as the number dimensions (" + docVec.size() + ") of the document vector.";
+        public float score(ArrayList<Float> docVec) {
+          assert this.queryVector.size() == docVec.size() : "The nr. of dim. of the query vector (" + this.queryVector.size() + ") is not the same as the nr. dim. (" + docVec.size() + ") of the document vector.";
+          LOG.info("[Score] vec: " + docVec.toString());
           float dot = 0f;
 
           for (int i = 0; i < docVec.size(); i++) {
