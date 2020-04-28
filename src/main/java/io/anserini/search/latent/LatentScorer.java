@@ -31,7 +31,7 @@ public class LatentScorer extends Scorer{
         impactsDisi = new ImpactsDISI(impactsEnum, impactsEnum, docScorer.getSimScorer());
         this.docScorer = docScorer;
 
-        LOG.info("[LatentScorer] Init! Weight: " + weight.toString() + "\npostingsEnum: " + postingsEnum.toString() + "\nLeafSimScorer: " + docScorer.toString());
+        // LOG.info("[LatentScorer] Init! Weight: " + weight.toString() + "\npostingsEnum: " + postingsEnum.toString() + "\nLeafSimScorer: " + docScorer.toString());
     }
 
     @Override
