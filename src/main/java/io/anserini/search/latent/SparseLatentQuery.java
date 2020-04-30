@@ -25,7 +25,6 @@ import org.apache.lucene.util.BytesRefBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,7 +35,6 @@ public class SparseLatentQuery extends Query{
     private final ArrayList<Float> representation;
     private final Term term;
     private final TermStates perReaderTermState;
-    private final Random random;
 
     private static final Logger LOG = LogManager.getLogger(SparseLatentQuery.class);
     
@@ -114,16 +112,21 @@ public class SparseLatentQuery extends Query{
     }
 
     public SparseLatentQuery(String queryString, String fieldString) {
-        LOG.info("[Query] string: " + queryString + "field:" + fieldString);
         this.perReaderTermState = null;
-        this.representation = new ArrayList<Float>(3);
-        this.random = new Random();
-        for (int i = 0; i < 3; i++) {
-            representation.add(i, (float) this.random.nextFloat());
-        }
+        if (queryString.indexOf("[") != -1) {
+            // Replace this below
+            this.representation = stringToVec(queryString);
+            this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
+        } else {
+            LOG.warn("[Query] No query vector was found as input. Using random vector.");
+            this.representation = new ArrayList<Float>(3);
+            for (int i = 0; i < 3; i++) {
+                representation.add(i, (float) 0.9f + 0.1f * i);
+            }
 
-        LOG.info("vector: " + representation.toString());
-        this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
+            LOG.info("vector: " + representation.toString());
+            this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
+        }
     }
 
     public ArrayList getRepresentation() {
@@ -163,6 +166,16 @@ public class SparseLatentQuery extends Query{
         return this.representation.hashCode();
     }
 
+    public static ArrayList<Float> stringToVec(String vec) {
+        vec = vec.replaceAll("([\\[\\] ])", "");
+        String[] nmbs = vec.split(",");
+        ArrayList<Float> flvec = new ArrayList<Float>(nmbs.length);
+        for (String fl : nmbs) {
+            flvec.add(Float.parseFloat(fl));
+        }
+        return flvec;
+    }
+
     public static byte[] vecToBytes(ArrayList<Float> vec) {
         byte[] f = new byte[4];
         byte[] v = new byte[4 * vec.size()];
@@ -177,6 +190,7 @@ public class SparseLatentQuery extends Query{
         return v;
     }
 
+    // Inspiration for float-to-byte: https://discourse.processing.org/t/float-value-to-byte-array/16698/2
     public static byte[] floatToByteArr(float f) {
         byte[] fb = new byte[4];
         int[] intArr = floatToIntArr(f);
