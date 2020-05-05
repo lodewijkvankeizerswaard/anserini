@@ -470,16 +470,11 @@ public final class SearchCollection implements Closeable {
     }
 
     TopDocs rs = new TopDocs(new TotalHits(0, TotalHits.Relation.EQUAL_TO), new ScoreDoc[]{});
-    LOG.info("TopDocs initialized!");
     if (!(isRerank && args.rerankcutoff <= 0)) {
       if (args.arbitraryScoreTieBreak) {// Figure out how to break the scoring ties.
-        LOG.info("Initializing search of the searcher");
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits);
-        LOG.info("searcher complete!");
       } else {
-        LOG.info("Initializing search of the searcher");
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits, BREAK_SCORE_TIES_BY_DOCID, true);
-        LOG.info("searcher complete!");
       }
     }
 
