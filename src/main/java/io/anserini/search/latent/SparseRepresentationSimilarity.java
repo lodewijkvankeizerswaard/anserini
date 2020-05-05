@@ -30,14 +30,13 @@ import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.lang.Throwable;
 
 
 public class SparseRepresentationSimilarity extends Similarity {
     private static final Logger LOG = LogManager.getLogger(SparseRepresentationSimilarity.class);
 
-    public SparseRepresentationSimilarity() {
-        LOG.info("[SparseRepresentationSimilarity] Init!");
-    }
+    public SparseRepresentationSimilarity() { }
     
     // Needs to be overridden so is used by the searcher object
     @Override
@@ -59,7 +58,7 @@ public class SparseRepresentationSimilarity extends Similarity {
             LOG.warn("[SparseSim] More than one termstatistic was passed (only one handledl)!");
         }
         TermStatistics ts = termStats[0];
-        LOG.info("[SparseSim] scorer: " + collectionStats.toString() + " \t termStats: " + ts.term().toString());
+        LOG.info("[SparseSim] Binary version of term: " + ts.term().toString());
 
         ArrayList<Float> queryVec = new ArrayList<Float>(3);
 
@@ -113,6 +112,15 @@ public class SparseRepresentationSimilarity extends Similarity {
         @Override
         public float score(float freq, long norm) {
           LOG.info("[Score] 1f");
+
+          // try {
+          //   throw new Exception("Getting the stack");
+          // } catch (Throwable e) {
+          //   e.printStackTrace();
+          // }
+          
+
+
           return 1f;
         }
 

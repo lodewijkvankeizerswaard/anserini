@@ -28,9 +28,10 @@ public class LatentScorer extends Scorer{
         super(weight);
         iterator = this.postingsEnum = postingsEnum;
         impactsEnum = new SlowImpactsEnum(postingsEnum);
+        LOG.info(docID());
         impactsDisi = new ImpactsDISI(impactsEnum, impactsEnum, docScorer.getSimScorer());
         this.docScorer = docScorer;
-
+        LOG.info("------------------Latent Scorer Init --------------------");
         // LOG.info("[LatentScorer] Init! Weight: " + weight.toString() + "\npostingsEnum: " + postingsEnum.toString() + "\nLeafSimScorer: " + docScorer.toString());
     }
 

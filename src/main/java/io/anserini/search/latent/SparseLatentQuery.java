@@ -85,8 +85,12 @@ public class SparseLatentQuery extends Query{
             assert termStates.wasBuiltFor(ReaderUtil.getTopLevelContext(context)) :
                 "The top-reader used to create Weight is not the same as the current reader's top-reader (" + ReaderUtil.getTopLevelContext(context);
             
+            LOG.info("context.ord: " + context.ord + " \t docbase: " + context.docBase);
+
             final TermState state = termStates.get(context);
             final TermsEnum termsEnum = context.reader().terms(term.field()).iterator();
+
+            LOG.info("termsEnum: " + termsEnum);
             // No idea what this does internally, but it just returns true or false, and it errored so it was disabled.
             // termsEnum.seekExact(term.bytes(), state);
             return termsEnum;
