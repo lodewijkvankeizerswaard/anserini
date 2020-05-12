@@ -27,14 +27,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SparseLatentQuery extends Query{
-    private final ArrayList<Float> representation;
-    private final Term term;
+    private final ArrayList<Term> latentIndices;
+    private final Map indicesDictionary;
     private final TermStates perReaderTermState;
+    private final String field;
+    private final int nrIndices;
+
+    // lijst van terms Term(3:0.9), Term(50:0.89)
 
     private static final Logger LOG = LogManager.getLogger(SparseLatentQuery.class);
     
@@ -51,14 +60,24 @@ public class SparseLatentQuery extends Query{
             this.scoreMode = scoreMode;
             this.termStates = termStates;
             final CollectionStatistics collectionStats;
-            final TermStatistics termStats;
-            if (scoreMode.needsScores()) {
-                collectionStats = searcher.collectionStatistics(term.field());
-                termStats = new TermStatistics(term.bytes(), 1, 1);
+            final TermStatistics[] termStats = new TermStatistics[nrIndices];
+            if (scoreMode.needsScores()) {              
+                Iterator it = indicesDictionary.entrySet().iterator();
+                int i = 0;
+                while (it.hasNext()) {
+                    Map.Entry pair = (Map.Entry)it.next();
+                    String indexKey = pair.getKey().toString();
+                    Float indexVal = Float.parseFloat(pair.getValue().toString());
+                    final TermStatistics termStat = new TermStatistics(new BytesRef(indexKey.getBytes()), floatToLong(indexVal), 1);
+                    termStats[i] = termStat;
+                    i++;
+                }
+                collectionStats = searcher.collectionStatistics(latentIndices.get(0).field());
             } else {
+                LOG.warn("Not using the correct termStatistics!!!");
                 // we do not need the actual stats, use fake stats with docFreq=maxDoc=ttf=1
-                collectionStats = new CollectionStatistics(term.field(), 1, 1, 1, 1);
-                termStats = new TermStatistics(term.bytes(), 1, 1);
+                collectionStats = new CollectionStatistics(field, 1, 1, 1, 1);
+                termStats[0] = new TermStatistics(new Term(field, "bla").bytes(), 1, 1);
             }
             this.simScorer = this.similarity.scorer(boost, collectionStats, termStats);
         }
@@ -72,7 +91,7 @@ public class SparseLatentQuery extends Query{
             if (termsEnum == null) {
               return null;
             }
-            LeafSimScorer scorer = new LeafSimScorer(simScorer, context.reader(), term.field(), scoreMode.needsScores());
+            LeafSimScorer scorer = new LeafSimScorer(simScorer, context.reader(), field, scoreMode.needsScores());
             if (scoreMode == ScoreMode.TOP_SCORES) {
               return new LatentScorer(this, termsEnum.impacts(PostingsEnum.NONE), scorer);
             } else {
@@ -88,7 +107,13 @@ public class SparseLatentQuery extends Query{
             LOG.info("context.ord: " + context.ord + " \t docbase: " + context.docBase);
 
             final TermState state = termStates.get(context);
-            final TermsEnum termsEnum = context.reader().terms(term.field()).iterator();
+
+            LOG.info("state: " + state);
+
+            // TODO hier zoeken op alle indices als term zodat alle documenten met een van de indices in de lijst komen te staan
+            LOG.info("context: " + context.toString());
+            LOG.info("reader: " + context.reader());
+            final TermsEnum termsEnum = context.reader().terms(field).iterator();
 
             LOG.info("termsEnum: " + termsEnum);
             // No idea what this does internally, but it just returns true or false, and it errored so it was disabled.
@@ -115,30 +140,29 @@ public class SparseLatentQuery extends Query{
         }
     }
 
-    public SparseLatentQuery(String queryString, String fieldString) {
+    public SparseLatentQuery(Map dictionary, String fieldString) {
         this.perReaderTermState = null;
-        if (queryString.indexOf("[") != -1) {
-            // Replace this below
-            this.representation = stringToVec(queryString);
-            this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
-        } else {
-            LOG.warn("[Query] No query vector was found as input. Using random vector.");
-            this.representation = new ArrayList<Float>(3);
-            for (int i = 0; i < 3; i++) {
-                representation.add(i, (float) 0.9f + 0.1f * i);
-            }
+        this.indicesDictionary = dictionary;
+        this.field = fieldString;
 
-            LOG.info("vector: " + representation.toString());
-            this.term = new Term(fieldString, new BytesRef(vecToBytes(representation)));
+        this.latentIndices = new ArrayList<Term>();
+
+        Iterator it = dictionary.entrySet().iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            String indexKey = pair.getKey().toString();
+            Term indexTerm = new Term(fieldString, new BytesRef(indexKey.getBytes()));
+            this.latentIndices.add(indexTerm);
+            LOG.info(pair.getKey() + "=" + pair.getValue());
+            it.remove(); // avoids a ConcurrentModificationException
+            i++;
         }
+        this.nrIndices = i;
     }
 
-    public ArrayList getRepresentation() {
-        return this.representation;
-    }
-
-    public Term getTerm() {
-        return this.term;
+    public ArrayList<Term> getTerms() {
+        return this.latentIndices;
     }
 
     @Override
@@ -147,7 +171,7 @@ public class SparseLatentQuery extends Query{
         final TermStates termState;
         if (perReaderTermState == null
             || perReaderTermState.wasBuiltFor(context) == false) {
-          termState = TermStates.build(context, this.term, scoreMode.needsScores());
+          termState = TermStates.build(context, this.latentIndices.get(0), scoreMode.needsScores());
         } else {
           // PRTS was pre-build for this IS
           termState = this.perReaderTermState;
@@ -157,17 +181,17 @@ public class SparseLatentQuery extends Query{
 
     @Override
     public String toString(String field) {
-        return representation.toString();
+        return indicesDictionary.toString();
     }
 
     @Override
     public boolean equals(Object other) {
-        return sameClassAs(other) && representation.equals(other);
+        return other.getClass().equals( this.getClass()) && other.hashCode() == this.hashCode();
     }
 
     @Override
     public int hashCode() {
-        return this.representation.hashCode();
+        return this.indicesDictionary.hashCode();
     }
 
     public static ArrayList<Float> stringToVec(String vec) {
@@ -192,6 +216,24 @@ public class SparseLatentQuery extends Query{
         }
 
         return v;
+    }
+
+    public static long floatToLong(float f) {
+        byte[] bytes = floatToByteArr(f);
+        return bytesToLong(bytes);
+    }
+
+    public static byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
+    }
+    
+    public static long bytesToLong(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.put(bytes);
+        buffer.flip();//need flip 
+        return buffer.getLong();
     }
 
     // Inspiration for float-to-byte: https://discourse.processing.org/t/float-value-to-byte-array/16698/2

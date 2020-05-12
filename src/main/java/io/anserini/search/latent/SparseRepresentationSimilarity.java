@@ -51,18 +51,18 @@ public class SparseRepresentationSimilarity extends Similarity {
     }
     
     // Needs to be overridden so is used by the searcher object
+    // TODO gegeven de termstatistics maak een SimScorer met een dict van de sparse latent values
     @Override
     public final SimScorer scorer(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+
+        // IN -> lijst van terms Term(3:0.9), Term(50:0.89)
         Objects.requireNonNull(termStats);
-        if (termStats.length > 1) {
-            LOG.warn("[SparseSim] More than one termstatistic was passed (only one handledl)!");
-        }
         TermStatistics ts = termStats[0];
-        LOG.info("[SparseSim] Binary version of term: " + ts.term().toString());
+        // LOG.info("[SparseSim] Binary version of term: " + ts.term().toString());
 
         ArrayList<Float> queryVec = new ArrayList<Float>(3);
 
-        queryVec = bytesToVec(ts.term().bytes);
+        // queryVec = bytesToVec(ts.term().bytes);
     
         return new SparRepFixed(boost, queryVec);
     }
@@ -102,7 +102,11 @@ public class SparseRepresentationSimilarity extends Similarity {
     
         private final float boost;
         private final ArrayList<Float> queryVector;
-    
+
+        // private final dict = {3 : 0.9, 50 : 0,89}
+
+
+        // TODO new constructor that takes a dictionary of the sparse latent query values
         SparRepFixed(float boost, ArrayList<Float> queryVec) {
           LOG.info("[Scorer object] init: " +  queryVec.toString());
           this.boost = boost;
@@ -121,9 +125,11 @@ public class SparseRepresentationSimilarity extends Similarity {
           
 
 
-          return 1f;
+          return 10000f;
         }
+        
 
+        // TODO rewrite this scorer function: Takes a documentDict and computes the sparse dot product.
         public float score(ArrayList<Float> docVec) {
           assert this.queryVector.size() == docVec.size() : "The nr. of dim. of the query vector (" + this.queryVector.size() + ") is not the same as the nr. dim. (" + docVec.size() + ") of the document vector.";
           LOG.info("[Score] vec: " + docVec.toString());
@@ -132,6 +138,10 @@ public class SparseRepresentationSimilarity extends Similarity {
           for (int i = 0; i < docVec.size(); i++) {
             dot += (float) queryVector.get(i) * (float) docVec.get(i);
           }
+
+          // for (value in dict) {
+          //   score += value.value * docDict[value.key].value;
+          // }
           
           return dot;
         }

@@ -27,11 +27,26 @@ import org.apache.lucene.search.Query;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Map;
+import java.util.HashMap;
+
+// IN -> 3:0.9 50:0.89 72:0.99
+// multi term query
+
 public class SparseReprQueryGenerator extends QueryGenerator {
     private static final Logger LOG = LogManager.getLogger(SparseReprQueryGenerator.class);
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
+      Map<String, Float> dictionary = new HashMap<String, Float>();
+      String[] indices = queryText.split(" ");
+      
+      for (String ind : indices) {
+        String[] keyValue = ind.split(":");
+        dictionary.put(keyValue[0], Float.parseFloat(keyValue[1]));
+      }
+      
       LOG.info("Generating query for: " + field + " containing " + queryText);
-      return new SparseLatentQuery(queryText, field);
+      LOG.info(dictionary.toString());
+      return new SparseLatentQuery(dictionary, field);
     }
 }
