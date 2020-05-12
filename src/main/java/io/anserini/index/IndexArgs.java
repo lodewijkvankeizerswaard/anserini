@@ -217,4 +217,17 @@ public class IndexArgs {
   @Option(name = "-shard.current", metaVar = "[n]",
       usage = "The current shard number to generate (indexed from 0).")
   public int shardCurrent = -1;
+
+  // Sparse Latent Representation options
+  @Option(name = "-neuralIndex",
+      usage = "Boolean switch to index on neural representations")
+  public boolean neuralIndex = false;
+
+  @Option(name = "-storeSLR",
+      usage = "Boolean switch to store sparse latent representations; only used in SLRGenerator")
+  public boolean storeSLR = false;
+
+  @Option(name = "-sparseNeuralIndex", metaVar = "[k]",
+      usage = "Decimal precision of dimension values for neural-based indexing.")
+  public int neuralIndexDecimals = 3;
 }
