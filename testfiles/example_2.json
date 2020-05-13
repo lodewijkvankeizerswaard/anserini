@@ -3,7 +3,7 @@
 [
     {
       "id": "doc1",
-      "contents": "this is the contents 1."
+      "contents": "this is the contents 1 72 ."
     },
     {
       "id": "doc2",
@@ -12,7 +12,7 @@
 
     {
       "id": "doc3",
-      "contents": "this is the contents 2."
+      "contents": "this is the contents 3 72."
     }
 
   ]
