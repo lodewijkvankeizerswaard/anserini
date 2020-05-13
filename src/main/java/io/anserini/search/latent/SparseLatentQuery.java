@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import org.apache.lucene.index.SegmentReader;
 
 import java.nio.ByteBuffer;
 
@@ -110,14 +111,17 @@ public class SparseLatentQuery extends Query{
 
             LOG.info("state: " + state);
 
+            LeafReader sr = context.reader();
+
             // TODO hier zoeken op alle indices als term zodat alle documenten met een van de indices in de lijst komen te staan
-            LOG.info("context: " + context.toString());
-            LOG.info("reader: " + context.reader());
+            LOG.info("context: " + context.getClass());
+            LOG.info("reader has " + context.reader().numDocs() + " documents.");
+            LOG.info("reader has these terms in the field:" + sr.terms(field) + " " + sr.terms(field).getClass());
             final TermsEnum termsEnum = context.reader().terms(field).iterator();
 
             LOG.info("termsEnum: " + termsEnum);
             // No idea what this does internally, but it just returns true or false, and it errored so it was disabled.
-            // termsEnum.seekExact(term.bytes(), state);
+            termsEnum.seekExact(latentIndices.get(0).bytes(), state);
             return termsEnum;
           }
 

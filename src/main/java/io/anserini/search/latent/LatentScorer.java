@@ -27,6 +27,19 @@ public class LatentScorer extends Scorer{
     public LatentScorer(Weight weight, PostingsEnum postingsEnum, LeafSimScorer docScorer) {
         super(weight);
         iterator = this.postingsEnum = postingsEnum;
+        LOG.info("iterator: " + iterator.getClass().toString());
+        // for (int docId : iterator) {
+        //     LOG.info("id: " + docId);
+        // }
+        try {
+            int p = postingsEnum.nextPosition();
+            LOG.info("pos: " + p);
+            LOG.info(postingsEnum.getPayload().toString());
+        } catch (Exception e){
+            LOG.warn(e);
+        }
+        
+
         impactsEnum = new SlowImpactsEnum(postingsEnum);
         LOG.info(docID());
         impactsDisi = new ImpactsDISI(impactsEnum, impactsEnum, docScorer.getSimScorer());
@@ -47,6 +60,8 @@ public class LatentScorer extends Scorer{
 
     @Override
     public float score() throws IOException {
+        // TODO Een nieuwe score functie aanroepen
+        // Meegeven lijst van indeces met scores van de documenten
         assert docID() != DocIdSetIterator.NO_MORE_DOCS;
         LOG.info("[LatentScorer] Score: " + postingsEnum.toString());
         return docScorer.score(postingsEnum.docID(), postingsEnum.freq());
