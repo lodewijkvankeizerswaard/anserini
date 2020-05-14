@@ -90,7 +90,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
   @Override
   public Document createDocument(T src) throws GeneratorException {
-    LOG.info(String.format("CREATING DOCUMENT"));
     String id = src.id();
     String contents;
 

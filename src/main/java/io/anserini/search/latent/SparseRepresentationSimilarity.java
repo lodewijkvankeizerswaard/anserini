@@ -94,25 +94,17 @@ public class SparseRepresentationSimilarity extends Similarity {
     }
 
     private static class SparRepFixed extends SimScorer {
-    
         private final float activationValueDivider;
         private final float queryValue;
 
         SparRepFixed(float activationValueDivider, float queryValue) {
-          LOG.info("[Scorer object] init: " +  queryValue);
           this.activationValueDivider = activationValueDivider;
           this.queryValue = queryValue;
         }
     
         @Override
         public float score(float freq, long norm) {
-          LOG.info("[Score] constant. Args:" + freq + " " + norm);
           return this.queryValue * freq / activationValueDivider;
-        }
-        
-        public float score(Float qFloat, Float docFloat) {
-          LOG.info("[Score] doc: " + docFloat + "divider:"  + this.activationValueDivider + " query: " + qFloat);
-          return qFloat * (docFloat / this.activationValueDivider);
         }
     }
 

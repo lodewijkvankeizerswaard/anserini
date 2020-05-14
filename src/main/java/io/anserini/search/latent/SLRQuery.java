@@ -27,13 +27,8 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 
 import java.io.IOException;
-// import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
-// import java.util.Map;
-// import java.util.HashMap;
-// import java.util.Iterator;
-// import org.apache.lucene.index.SegmentReader;
 
 import java.nio.ByteBuffer;
 
@@ -76,7 +71,6 @@ public class SLRQuery extends TermQuery{
                 this.simScorer = null; // term doesn't exist in any segment, we won't use similarity at all
             } else {
                 this.simScorer = similarity.scorer(boost, collectionStats, termStats);
-                // this.simScorer = similarity.SLRscorer(activationValue);
             }
         }
 

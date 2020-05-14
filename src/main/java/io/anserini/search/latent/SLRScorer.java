@@ -28,10 +28,8 @@ public class SLRScorer extends Scorer{
     /**
      * Construct a {@link TermScorer} that will iterate all documents.
      */
-    SLRScorer(SLRWeight weight, PostingsEnum postingsEnum, LeafSimScorer docScorer) {
+    SLRScorer(Weight weight, PostingsEnum postingsEnum, LeafSimScorer docScorer) {
         super(weight);
-        LOG.info(weight.getValue());
-        // SLRWeight sWeight = weight;
         iterator = this.postingsEnum = postingsEnum;
         impactsEnum = new SlowImpactsEnum(postingsEnum);
         impactsDisi = new ImpactsDISI(impactsEnum, impactsEnum, docScorer.getSimScorer());
@@ -44,7 +42,6 @@ public class SLRScorer extends Scorer{
      */
     SLRScorer(SLRWeight weight, ImpactsEnum impactsEnum, LeafSimScorer docScorer) {
         super(weight);
-        LOG.info("Using impacts scorer!");
         postingsEnum = this.impactsEnum = impactsEnum;
         impactsDisi = new ImpactsDISI(impactsEnum, impactsEnum, docScorer.getSimScorer());
         iterator = impactsDisi;
@@ -68,8 +65,6 @@ public class SLRScorer extends Scorer{
     @Override
     public float score() throws IOException {
         assert docID() != DocIdSetIterator.NO_MORE_DOCS;
-        LOG.info("SCORE!! " + docID());
-        LOG.info(docScorer.getClass());
         return docScorer.score(postingsEnum.docID(), postingsEnum.freq());
     }
     
