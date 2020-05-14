@@ -188,6 +188,9 @@ public class SearchArgs {
   @Option(name = "-sr", usage = "boolean switch to use Sparse Representation query")
   public boolean sr = false;
 
+  @Option(name = "-sr.ip", metaVar = "[value]", usage = "SLR decimal index precision")
+  public int sr_ip = 5;
+
   @Option(name = "-sdm.tw", metaVar = "[value]", usage = "SDM term weight")
   public float sdm_tw = 0.85f;
 

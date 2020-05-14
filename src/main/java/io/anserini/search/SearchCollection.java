@@ -328,7 +328,7 @@ public final class SearchCollection implements Closeable {
         similarities.add(new TaggedSimilarity(new AxiomaticF2LOG(Float.valueOf(s)), String.format("f2log(s=%s)", s)));
       }
     } else if (args.sr) {
-      similarities.add(new TaggedSimilarity(new SparseRepresentationSimilarity(), "sr"));
+      similarities.add(new TaggedSimilarity(new SparseRepresentationSimilarity(args.sr_ip), "sr"));
     } else {
       throw new IllegalArgumentException("Error: Must specify scoring model!");
     }

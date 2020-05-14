@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SLRQuery extends TermQuery{
     private final Term term;
-    protected final Float value;
+    protected final Float activationValue;
     private final TermStates perReaderTermState;
 
     final class SLRWeight extends Weight {
@@ -65,17 +65,18 @@ public class SLRQuery extends TermQuery{
             final TermStatistics termStats;
             if (scoreMode.needsScores()) {
                 collectionStats = searcher.collectionStatistics(term.field());
-                termStats = new TermStatistics(term.bytes(), floatToLong((float) value), Long.MAX_VALUE);
+                termStats = new TermStatistics(term.bytes(), floatToLong((float) activationValue), Long.MAX_VALUE);
             } else {
                 // we do not need the actual stats, use fake stats with docFreq=maxDoc=ttf=1
                 collectionStats = new CollectionStatistics(term.field(), 1, 1, 1, 1);
-                termStats = new TermStatistics(term.bytes(), floatToLong((float) value), Long.MAX_VALUE);
+                termStats = new TermStatistics(term.bytes(), floatToLong((float) activationValue), Long.MAX_VALUE);
             }
         
             if (termStats == null) {
                 this.simScorer = null; // term doesn't exist in any segment, we won't use similarity at all
             } else {
                 this.simScorer = similarity.scorer(boost, collectionStats, termStats);
+                // this.simScorer = similarity.SLRscorer(activationValue);
             }
         }
 
@@ -153,7 +154,7 @@ public class SLRQuery extends TermQuery{
         public void extractTerms(Set<Term> terms) {}
 
         public Float getValue() {
-            return value;
+            return activationValue;
         }
     }
 
@@ -165,7 +166,7 @@ public class SLRQuery extends TermQuery{
     public SLRQuery(Term t, Float v) {
         super(t);
         term = Objects.requireNonNull(t);
-        value = v;
+        activationValue = v;
         perReaderTermState = null;
     }
 

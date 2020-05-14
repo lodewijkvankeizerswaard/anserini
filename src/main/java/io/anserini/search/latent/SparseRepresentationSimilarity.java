@@ -26,6 +26,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import java.util.List;
 import java.util.Objects;
 import java.nio.ByteBuffer;
+import java.lang.Math;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,8 +35,10 @@ import java.lang.Throwable;
 
 public class SparseRepresentationSimilarity extends Similarity {
     private static final Logger LOG = LogManager.getLogger(SparseRepresentationSimilarity.class);
-
-    public SparseRepresentationSimilarity() { }
+    private double activationValueDivider;
+    public SparseRepresentationSimilarity(int decimalPrecision) {
+      this.activationValueDivider = Math.pow(10, decimalPrecision);
+    }
     
     // Needs to be overridden so is used by the searcher object
     @Override
@@ -56,7 +59,7 @@ public class SparseRepresentationSimilarity extends Similarity {
 
         float queryValue = longToFloat(ts.docFreq());
     
-        return new SparRepFixed(boost, queryValue);
+        return new SparRepFixed((float) activationValueDivider, queryValue);
     }
 
     public static float longToFloat(long l) {
@@ -92,26 +95,24 @@ public class SparseRepresentationSimilarity extends Similarity {
 
     private static class SparRepFixed extends SimScorer {
     
-        private final float boost;
+        private final float activationValueDivider;
         private final float queryValue;
 
-        SparRepFixed(float boost, float queryValue) {
+        SparRepFixed(float activationValueDivider, float queryValue) {
           LOG.info("[Scorer object] init: " +  queryValue);
-          this.boost = boost;
+          this.activationValueDivider = activationValueDivider;
           this.queryValue = queryValue;
         }
     
         @Override
         public float score(float freq, long norm) {
           LOG.info("[Score] constant. Args:" + freq + " " + norm);
-          return this.queryValue * freq;
+          return this.queryValue * freq / activationValueDivider;
         }
         
-
-        // TODO rewrite this scorer function: Takes a documentDict and computes the sparse dot product.
         public float score(Float qFloat, Float docFloat) {
-          LOG.info("[Score] doc: " + docFloat + " query: " + qFloat);
-          return qFloat * docFloat;
+          LOG.info("[Score] doc: " + docFloat + "divider:"  + this.activationValueDivider + " query: " + qFloat);
+          return qFloat * (docFloat / this.activationValueDivider);
         }
     }
 
