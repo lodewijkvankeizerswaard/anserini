@@ -227,7 +227,7 @@ public class IndexArgs {
       usage = "Boolean switch to store sparse latent representations; only used in SLRGenerator")
   public boolean storeSLR = false;
 
-  @Option(name = "-sparseNeuralIndex", metaVar = "[k]",
+  @Option(name = "-niDecimalPrecision", metaVar = "[k]",
       usage = "Decimal precision of dimension values for neural-based indexing.")
-  public int neuralIndexDecimals = 3;
+  public int neuralIndexDecimals = 5;
 }
