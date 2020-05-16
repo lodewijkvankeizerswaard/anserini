@@ -32,8 +32,8 @@ src/main/resources/topics-and-qrels/qrels.mb11.all.txt
 src/main/resources/topics-and-qrels/qrels.mb13.all.txt
 
 # datasets
-msmarco*
-test*
+data/*
+data-results/*
 
 # vscode related files
 .vscode
