@@ -77,7 +77,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     String rep = "";
     for (int i = 0; i < SLR.length; i++) {
       if(SLR[i] != 0) {
-        rep += " " + String.valueOf(i) + ":" +String.valueOf(SLR[i]);
+        rep += " " + String.valueOf(i) + String.valueOf(SLR[i]);
       }
     }
     return rep;
