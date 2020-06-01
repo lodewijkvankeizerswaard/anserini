@@ -73,6 +73,16 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     return SLR;
   }
 
+  static String createSparseRep(double SLR[]) {
+    String rep = "";
+    for (int i = 0; i < SLR.length; i++) {
+      if(SLR[i] != 0) {
+        rep += " " + String.valueOf(SLR[i]);
+      }
+    }
+    return rep;
+  }
+
   static String createSparseContents(double SLR[], int num_of_decimals) {
     // create string containing which latent dimensions are active
     // treat dimension values like word frequencies
@@ -113,7 +123,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     document.add(new SortedDocValuesField(IndexArgs.ID, new BytesRef(id)));
 
     FieldType fieldType = new FieldType();
-    fieldType.setStored(args.storeContents);
+    fieldType.setStored(args.storeContents); // TODO what does this exactly!!
 
     // Are we storing document vectors?
     if (args.storeDocvectors) {
@@ -131,11 +141,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
     
 
-    if (args.storeRaw || args.storeSLR) {
+    if (args.storeRaw || args.appendSLR) {
       Map<String, String> dictionary = new HashMap<String, String>();
 
       // Are we storing the sparse latent representation seperately?
-	    if (args.storeSLR) {
+	    if (args.appendSLR) {
       	dictionary.put("slr", Arrays.toString(SLR));
       }
 
@@ -147,10 +157,13 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     }
 
     // Are we making a neural or traditional index?
-    if(args.neuralIndex) {
+    if(args.SLRIndexOld) {
       // index on sparse latent dimensions
-      String sparseContents = createSparseContents(SLR, args.neuralIndexDecimals);
+      String sparseContents = createSparseContents(SLR, args.SLRIndexDecimals);
       document.add(new Field(IndexArgs.CONTENTS, sparseContents, fieldType));
+    } else if(args.SLRIndex) {
+      String sparseRep = createSparseRep(SLR);
+      document.add(new Field(IndexArgs.CONTENTS, sparseRep, fieldType));
     } else {
       document.add(new Field(IndexArgs.CONTENTS, contents, fieldType));
     }

@@ -43,13 +43,7 @@ public class SparseRepresentationSimilarity extends Similarity {
     // Needs to be overridden so is used by the searcher object
     @Override
     public final long computeNorm(FieldInvertState state) {
-        final int numTerms;
-        if (state.getIndexOptions() == IndexOptions.DOCS && state.getIndexCreatedVersionMajor() >= 8) {
-          numTerms = state.getUniqueTermCount();
-        } else {
-          numTerms = state.getLength();
-        }
-        return numTerms;
+        return 1;
     }
     
     @Override

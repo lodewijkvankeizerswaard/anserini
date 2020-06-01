@@ -219,15 +219,19 @@ public class IndexArgs {
   public int shardCurrent = -1;
 
   // Sparse Latent Representation options
-  @Option(name = "-neuralIndex",
+  @Option(name = "-appendSLR",
+      usage = "Boolean switch to append sparse latent representations to the index; only used in SLRGenerator")
+  public boolean appendSLR = false;
+
+  @Option(name = "-SLRIndexOld",
       usage = "Boolean switch to index on neural representations")
-  public boolean neuralIndex = false;
+  public boolean SLRIndexOld = false;
 
-  @Option(name = "-storeSLR",
-      usage = "Boolean switch to store sparse latent representations; only used in SLRGenerator")
-  public boolean storeSLR = false;
+  @Option(name = "-SLRIndex",
+      usage = "Boolean switch to index on neural representations")
+  public boolean SLRIndex = false;
 
-  @Option(name = "-niDecimalPrecision", metaVar = "[k]",
+  @Option(name = "-SLRDecimalPrecision", metaVar = "[k]",
       usage = "Decimal precision of dimension values for neural-based indexing.")
-  public int neuralIndexDecimals = 5;
+  public int SLRIndexDecimals = 2;
 }
