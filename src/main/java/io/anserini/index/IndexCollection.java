@@ -21,6 +21,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import io.anserini.analysis.DefaultEnglishAnalyzer;
+import io.anserini.analysis.SLRAnalyzer;
 import io.anserini.analysis.TweetAnalyzer;
 import io.anserini.collection.DocumentCollection;
 import io.anserini.collection.FileSegment;
@@ -742,6 +743,7 @@ public final class IndexCollection {
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer, CharArraySet.EMPTY_SET) :
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer);
       final TweetAnalyzer tweetAnalyzer = new TweetAnalyzer(args.tweetStemming);
+      final SLRAnalyzer slrAnalyzer = new SLRAnalyzer();
 
       final IndexWriterConfig config;
       if (args.collectionClass.equals("TweetCollection")) {
