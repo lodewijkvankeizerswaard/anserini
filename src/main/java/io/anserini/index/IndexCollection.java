@@ -745,7 +745,7 @@ public final class IndexCollection {
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer, CharArraySet.EMPTY_SET) :
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer);
       final TweetAnalyzer tweetAnalyzer = new TweetAnalyzer(args.tweetStemming);
-      final SLRAnalyzer slrAnalyzer = new SLRAnalyzer();
+      final SLRAnalyzer slrAnalyzer = new SLRAnalyzer(args.SLRIndexDecimals);
 
       final IndexWriterConfig config;
       if (args.collectionClass.equals("TweetCollection")) {

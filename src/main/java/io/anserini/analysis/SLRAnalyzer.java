@@ -10,10 +10,13 @@ import io.anserini.analysis.SLRTokenizer;
 // import io.anserini.analysis.DefaultEnglishAnalyzer;
 
 public class SLRAnalyzer extends Analyzer{
-    public SLRAnalyzer() { }
+    public int decPrecision;
+    public SLRAnalyzer(int argsDecPrecision) {
+        this.decPrecision = argsDecPrecision;
+    }
 
     protected TokenStreamComponents createComponents(String fieldName) {
-        Tokenizer source = new SLRTokenizer();
+        Tokenizer source = new SLRTokenizer(decPrecision);
         TokenStream result;
         result = source;
 

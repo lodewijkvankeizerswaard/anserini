@@ -57,15 +57,24 @@ public class SLRTokenizer extends Tokenizer{
 
     private int maxTokenLength = StandardAnalyzer.DEFAULT_MAX_TOKEN_LENGTH;
 
-    public static int SLRmultiplier = 1000000000;
+    public int SLRmultiplier;
 
     public SLRTokenizer(){
         init();
     }
 
+    public SLRTokenizer(int decPrecision){
+        init(decPrecision);
+    }
+
     public SLRTokenizer(AttributeFactory factory){
         super(factory);
         init();
+    }
+
+    public SLRTokenizer(AttributeFactory factory, int decPrecision){
+        super(factory);
+        init(decPrecision);
     }
 
     /**
@@ -99,6 +108,12 @@ public class SLRTokenizer extends Tokenizer{
 
     private void init() {
         this.scanner = new StandardTokenizerImpl(input);
+        this.SLRmultiplier = (int) Math.round(Math.pow(10, 7));
+    }
+
+    private void init(int decPrecision) {
+        this.scanner = new StandardTokenizerImpl(input);
+        this.SLRmultiplier = (int) Math.round(Math.pow(10, decPrecision));
     }
 
     // this tokenizer generates three attributes:
@@ -129,14 +144,14 @@ public class SLRTokenizer extends Tokenizer{
             if (scanner.yylength() <= maxTokenLength) {
                 posIncrAtt.setPositionIncrement(skippedPositions+1);
                 scanner.getText(termAtt);
-                LOG.info("input:" + termAtt.toString());
+                // LOG.info("input:" + termAtt.toString());
 
                 char [] slrValue = getSLRValue(termAtt.buffer());
                 double termValue = Double.parseDouble(String.valueOf(slrValue)) * SLRmultiplier;
-                LOG.info("Parsed double: " + Double.parseDouble(String.valueOf(slrValue)));
-                LOG.info("SLRmultiplier: " + SLRmultiplier);
-                LOG.info("value: " + String.valueOf(termValue));
-                LOG.info("intval: " + (int) Math.round(termValue));
+                // LOG.info("Parsed double: " + Double.parseDouble(String.valueOf(slrValue)));
+                // LOG.info("SLRmultiplier: " + SLRmultiplier);
+                // LOG.info("value: " + String.valueOf(termValue));
+                // LOG.info("intval: " + (int) Math.round(termValue));
                 freqAtt.setTermFrequency((int) Math.round(termValue));
 
                 char [] slrToken = getSLRToken(termAtt.buffer());
