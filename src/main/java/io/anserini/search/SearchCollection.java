@@ -104,8 +104,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import java.util.Vector;
-import io.anserini.search.similarity.SparseRepresentationSimilarity;
-import io.anserini.search.latent.SparseReprQueryGenerator;
+import io.anserini.search.similarity.SLRSimilarity;
+import io.anserini.search.latent.SLRQueryGenerator;
 import io.anserini.search.latent.SparseLatentQuery;
 
 /**
@@ -328,7 +328,7 @@ public final class SearchCollection implements Closeable {
         similarities.add(new TaggedSimilarity(new AxiomaticF2LOG(Float.valueOf(s)), String.format("f2log(s=%s)", s)));
       }
     } else if (args.sr) {
-      similarities.add(new TaggedSimilarity(new SparseRepresentationSimilarity(args.sr_ip), "sr"));
+      similarities.add(new TaggedSimilarity(new SLRSimilarity(args.sr_ip), "sr"));
     } else {
       throw new IllegalArgumentException("Error: Must specify scoring model!");
     }
@@ -464,7 +464,7 @@ public final class SearchCollection implements Closeable {
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
-      query = new SparseReprQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      query = new SLRQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }

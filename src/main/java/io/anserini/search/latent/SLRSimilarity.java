@@ -33,10 +33,10 @@ import org.apache.logging.log4j.Logger;
 import java.lang.Throwable;
 
 
-public class SparseRepresentationSimilarity extends Similarity {
-    private static final Logger LOG = LogManager.getLogger(SparseRepresentationSimilarity.class);
+public class SLRSimilarity extends Similarity {
+    private static final Logger LOG = LogManager.getLogger(SLRSimilarity.class);
     private double activationValueDivider;
-    public SparseRepresentationSimilarity(int decimalPrecision) {
+    public SLRSimilarity(int decimalPrecision) {
       this.activationValueDivider = Math.pow(10, decimalPrecision);
     }
     

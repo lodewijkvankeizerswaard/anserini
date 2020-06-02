@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 // IN -> 3:0.9 50:0.89 72:0.99
 // multi term query
 
-public class SparseReprQueryGenerator extends QueryGenerator {
+public class SLRQueryGenerator extends QueryGenerator {
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
