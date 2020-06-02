@@ -12,7 +12,12 @@ import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermFrequencyAttribute;
 import org.apache.lucene.util.AttributeFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class SLRTokenizer extends Tokenizer{
+    private static final Logger LOG = LogManager.getLogger(SLRTokenizer.class);
+
     /** A private instance of the JFlex-constructed scanner */
     private StandardTokenizerImpl scanner;
 
@@ -52,6 +57,8 @@ public class SLRTokenizer extends Tokenizer{
 
     private int maxTokenLength = StandardAnalyzer.DEFAULT_MAX_TOKEN_LENGTH;
 
+    public static int SLRmultiplier = 1000000000;
+
     public SLRTokenizer(){
         init();
     }
@@ -73,13 +80,13 @@ public class SLRTokenizer extends Tokenizer{
      */ 
     public void setMaxTokenLength(int length) {
         if (length < 1) {
-        throw new IllegalArgumentException("maxTokenLength must be greater than zero");
+            throw new IllegalArgumentException("maxTokenLength must be greater than zero");
         } else if (length > MAX_TOKEN_LENGTH_LIMIT) {
-        throw new IllegalArgumentException("maxTokenLength may not exceed " + MAX_TOKEN_LENGTH_LIMIT);
+            throw new IllegalArgumentException("maxTokenLength may not exceed " + MAX_TOKEN_LENGTH_LIMIT);
         }
         if (length != maxTokenLength) {
-        maxTokenLength = length;
-        scanner.setBufferSize(length);
+            maxTokenLength = length;
+            scanner.setBufferSize(length);
         }
     }
 
@@ -122,16 +129,53 @@ public class SLRTokenizer extends Tokenizer{
             if (scanner.yylength() <= maxTokenLength) {
                 posIncrAtt.setPositionIncrement(skippedPositions+1);
                 scanner.getText(termAtt);
+                LOG.info("input:" + termAtt.toString());
+
+                char [] slrValue = getSLRValue(termAtt.buffer());
+                double termValue = Double.parseDouble(String.valueOf(slrValue)) * SLRmultiplier;
+                LOG.info("Parsed double: " + Double.parseDouble(String.valueOf(slrValue)));
+                LOG.info("SLRmultiplier: " + SLRmultiplier);
+                LOG.info("value: " + String.valueOf(termValue));
+                LOG.info("intval: " + (int) Math.round(termValue));
+                freqAtt.setTermFrequency((int) Math.round(termValue));
+
+                char [] slrToken = getSLRToken(termAtt.buffer());
+                termAtt.copyBuffer(slrToken, 0, slrToken.length);
+                
                 final int start = scanner.yychar();
                 offsetAtt.setOffset(correctOffset(start), correctOffset(start+termAtt.length()));
                 typeAtt.setType(SLRTokenizer.TOKEN_TYPES[tokenType]);
-                freqAtt.setTermFrequency(100000);
                 return true;
             } else
                 // When we skip a too-long term, we still increment the
                 // position increment
                 skippedPositions++;
         }
+    }
+
+    private int getSLRDotPos(char[] buffer) {
+        for(int i = 0; i < buffer.length; i++) {
+            if(buffer[i] == '.')
+                return i;
+        }
+        return -1;
+    }
+
+    private char[] getSLRToken(char[] buffer) {
+        int valStart = getSLRDotPos(buffer) - 1;
+        char[] result = new char[valStart];
+        for(int i = 0; i < result.length; i++)
+            result[i] = buffer[i];
+        return result;
+    }
+
+    private char[] getSLRValue(char[] buffer) {
+        int valStart = getSLRDotPos(buffer) - 1;
+        char[] result = new char[18]; // Strings of doubles are 18 chars long
+        for(int i = 0; i < result.length; i++) {
+            result[i] = buffer[i + valStart];
+        }
+        return result;
     }
     
     @Override
