@@ -87,7 +87,7 @@ public class SLRTokenizer extends Tokenizer{
      * @throws IllegalArgumentException if the given length is outside of the
      *  range [1, {@value #MAX_TOKEN_LENGTH_LIMIT}].
      * 
-     * @param the max token lenght
+     * @param lenght the max token lenght
      */ 
     public void setMaxTokenLength(int length) {
         if (length < 1) {
