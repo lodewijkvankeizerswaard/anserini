@@ -764,7 +764,7 @@ public final class IndexCollection {
         config = new IndexWriterConfig(germanAnalyzer);
       } else if (args.language.equals("es")) {
         config = new IndexWriterConfig(spanishAnalyzer);
-      } else if (args.slr) {
+      } else if (args.slrIndex) {
         config = new IndexWriterConfig(slrAnalyzer);
       } else {
         config = new IndexWriterConfig(analyzer);
