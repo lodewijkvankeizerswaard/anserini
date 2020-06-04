@@ -149,7 +149,7 @@ public class SLRTokenizer extends Tokenizer{
                 // LOG.info("input:" + termAtt.toString());
 
                 char [] slrValue = getSLRValue(termAtt.buffer());
-                double termValue = Double.parseDouble(String.valueOf(slrValue)) * SLRmultiplier;
+                Float termValue = Float.parseFloat(String.valueOf(slrValue)) * SLRmultiplier;
                 // LOG.info("Parsed double: " + Double.parseDouble(String.valueOf(slrValue)));
                 // LOG.info("SLRmultiplier: " + SLRmultiplier);
                 // LOG.info("value: " + String.valueOf(termValue));
@@ -188,7 +188,7 @@ public class SLRTokenizer extends Tokenizer{
 
     private char[] getSLRValue(char[] buffer) {
         int valStart = getSLRDotPos(buffer) - 1;
-        char[] result = new char[18]; // Strings of doubles are 18 chars long
+        char[] result = new char[10]; // Strings of Floats are 10 chars long
         for(int i = 0; i < result.length; i++) {
             result[i] = buffer[i + valStart];
         }
