@@ -56,44 +56,42 @@ public class SLRQueryGenerator extends QueryGenerator {
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        Map<String, Float> querySLR = getQuerySLR(queryText);
 
-        if(pythonCommand == "") {
-            String[] indices = queryText.split(" ");
-            
-            for (String ind : indices) {
-                String[] keyValue = ind.split(":");
-                String key = keyValue[0].toString();
-                Float value = Float.parseFloat(keyValue[1].toString());
-                builder.add(new SLRQuery(new Term(field, key), value), BooleanClause.Occur.SHOULD);
-            }
-        } else {
-            // Use python model to obtain the SLR
-            Map<String, Float> querySLR = getQuerySLR(queryText);
-            for(Map.Entry<String, Float> cursor : querySLR.entrySet()) {
-                builder.add(new SLRQuery(new Term(field, cursor.getKey()), cursor.getValue()), BooleanClause.Occur.SHOULD);
-                LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
-            }
+        for(Map.Entry<String, Float> cursor : querySLR.entrySet()) {
+            Query q = new SLRQuery(new Term(field, cursor.getKey()), cursor.getValue());
+            builder.add(q, BooleanClause.Occur.SHOULD);
+            LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
         }
+
         return builder.build();
     }
 
     private Map<String, Float> getQuerySLR(String query) {
         Map<String, Float> querySLR = new HashMap<String, Float>(query.split(" ").length);
-        String line = null;
-        try {
-            Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand);
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
-            LOG.info(pythonCommand);
-            String[] slr = stdInput.readLine().replaceAll("[\\[(),\\]]", "").split(" ");
+        if(pythonCommand == ""){ // preprocessed input 
+            String[] indices = query.split(" ");
 
-            for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
-                querySLR.put(slr[i], Float.parseFloat(slr[i + 1]));
+            for (String ind : indices) {
+                String[] keyValue = ind.split(":");
+                querySLR.put(keyValue[0].toString(), Float.parseFloat(keyValue[1].toString()));
             }
-            LOG.info(querySLR.toString());
-        } catch (IOException e) {
-            LOG.error("Python module could not be executed!");
+
+        } else { // running python model
+            try {
+
+                Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand);
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
+                String[] slr = stdInput.readLine().replaceAll("[\\[(),\\]]", "").split(" ");
+
+                for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
+                    querySLR.put(slr[i], Float.parseFloat(slr[i + 1]));
+                }
+
+            } catch (IOException e) {
+                LOG.error("Python module could not be executed!");
+            }
         }
-        
 
         return querySLR;
     }
