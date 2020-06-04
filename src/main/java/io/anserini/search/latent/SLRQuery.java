@@ -156,7 +156,7 @@ public class SLRQuery extends TermQuery{
         this(t, 1f);
     }
 
-    /** Constructs a query for the term <code>t</code>. */
+    /** Constructs a query for the term <code>t</code>, with value <code>v</code>. */
     public SLRQuery(Term t, Float v) {
         super(t);
         term = Objects.requireNonNull(t);

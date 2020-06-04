@@ -35,6 +35,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 // IN -> 3:0.9 50:0.89 72:0.99
 // multi term query
@@ -44,6 +46,10 @@ public class SLRQueryGenerator extends QueryGenerator {
     private static final Logger LOG = LogManager.getLogger(SLRQueryGenerator.class);
 
     public SLRQueryGenerator(String pythonModel) {
+        if (pythonModel == "")
+            LOG.info("Using python model: false");
+        else
+            LOG.info("Using python model: " + pythonModel);
         pythonCommand = pythonModel;
     }
 
@@ -51,7 +57,7 @@ public class SLRQueryGenerator extends QueryGenerator {
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
-        if(queryText.indexOf(':') != -1) {
+        if(pythonCommand == "") {
             String[] indices = queryText.split(" ");
             
             for (String ind : indices) {
@@ -62,16 +68,28 @@ public class SLRQueryGenerator extends QueryGenerator {
             }
         } else {
             // Use python model to obtain the SLR
-            HashMap<String, Double> querySLR = getQuerySLR(queryText);
+            Map<String, Float> querySLR = getQuerySLR(queryText);
+            for(Map.Entry<String, Float> cursor : querySLR.entrySet()) {
+                builder.add(new SLRQuery(new Term(field, cursor.getKey()), cursor.getValue()), BooleanClause.Occur.SHOULD);
+                LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
+            }
         }
         return builder.build();
     }
 
-    private HashMap<String, Double> getQuerySLR(String query) {
-        HashMap<String, Double> querySLR = new HashMap<String, Double>(query.split(" ").length);
+    private Map<String, Float> getQuerySLR(String query) {
+        Map<String, Float> querySLR = new HashMap<String, Float>(query.split(" ").length);
+        String line = null;
         try {
-            Process pythonMod = Runtime.getRuntime().exec("cd .");
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonMod.getInputStream()));
+            Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand);
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
+            LOG.info(pythonCommand);
+            String[] slr = stdInput.readLine().replaceAll("[\\[(),\\]]", "").split(" ");
+
+            for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
+                querySLR.put(slr[i], Float.parseFloat(slr[i + 1]));
+            }
+            LOG.info(querySLR.toString());
         } catch (IOException e) {
             LOG.error("Python module could not be executed!");
         }
