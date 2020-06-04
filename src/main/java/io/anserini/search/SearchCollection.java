@@ -264,7 +264,7 @@ public final class SearchCollection implements Closeable {
     if (args.sdm) {
       LOG.info("QueryConstructor: SequentialDependenceModel");
       qc = QueryConstructor.SequentialDependenceModel;
-    } else if (args.sr) {
+    } else if (args.slr) {
       LOG.info("QueryConstructor: SparseRepresenation");
       qc = QueryConstructor.SparseRepresentation;
     } else {
@@ -327,8 +327,8 @@ public final class SearchCollection implements Closeable {
       for (String s : args.f2log_s) {
         similarities.add(new TaggedSimilarity(new AxiomaticF2LOG(Float.valueOf(s)), String.format("f2log(s=%s)", s)));
       }
-    } else if (args.sr) {
-      similarities.add(new TaggedSimilarity(new SLRSimilarity(args.sr_ip), "sr"));
+    } else if (args.slr) {
+      similarities.add(new TaggedSimilarity(new SLRSimilarity(args.slr_index_precision), "slr"));
     } else {
       throw new IllegalArgumentException("Error: Must specify scoring model!");
     }
@@ -464,7 +464,7 @@ public final class SearchCollection implements Closeable {
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
-      query = new SLRQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      query = new SLRQueryGenerator(args.slr_py).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }

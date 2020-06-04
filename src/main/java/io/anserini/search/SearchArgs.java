@@ -185,12 +185,6 @@ public class SearchArgs {
   @Option(name = "-sdm", usage = "boolean switch to use Sequential Dependence Model query")
   public boolean sdm = false;
 
-  @Option(name = "-sr", usage = "boolean switch to use Sparse Representation query")
-  public boolean sr = false;
-
-  @Option(name = "-sr.ip", metaVar = "[value]", usage = "SLR decimal index precision")
-  public int sr_ip = 5;
-
   @Option(name = "-sdm.tw", metaVar = "[value]", usage = "SDM term weight")
   public float sdm_tw = 0.85f;
 
@@ -199,6 +193,19 @@ public class SearchArgs {
 
   @Option(name = "-sdm.uw", metaVar = "[value]", usage = "unordered window weight in sdm")
   public float sdm_uw = 0.05f;
+
+  // -------------------------------------------------------------
+  // ranking model: Sparse Latent Representations
+  // -------------------------------------------------------------
+
+  @Option(name = "-slr", usage = "boolean switch to use Sparse Representation query. Unless -slr.py is specified input is assumed to be preprocessed: \"index-nr:value ...\"")
+  public boolean slr = false;
+
+  @Option(name = "-slr.py", usage = "python model and arguments to obtain the query SLR. If not present, preprocessed input is assumed")
+  public String slr_py = "";
+
+  @Option(name = "-slr.ip", metaVar = "[value]", usage = "SLR decimal index precision (default=5)")
+  public int slr_index_precision = 5;
 
   // --------------------------
   // query expansion model: rm3

@@ -31,26 +31,53 @@ import org.apache.lucene.index.Term;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// import java.util.Map;
-// import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 
 // IN -> 3:0.9 50:0.89 72:0.99
 // multi term query
 
 public class SLRQueryGenerator extends QueryGenerator {
+    private String pythonCommand = "";
+    private static final Logger LOG = LogManager.getLogger(SLRQueryGenerator.class);
+
+    public SLRQueryGenerator(String pythonModel) {
+        pythonCommand = pythonModel;
+    }
+
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
-        String[] indices = queryText.split(" ");
-        
-        for (String ind : indices) {
-            String[] keyValue = ind.split(":");
-            String key = keyValue[0].toString();
-            Float value = Float.parseFloat(keyValue[1].toString());
-            builder.add(new SLRQuery(new Term(field, key), value), BooleanClause.Occur.SHOULD);
+
+        if(queryText.indexOf(':') != -1) {
+            String[] indices = queryText.split(" ");
+            
+            for (String ind : indices) {
+                String[] keyValue = ind.split(":");
+                String key = keyValue[0].toString();
+                Float value = Float.parseFloat(keyValue[1].toString());
+                builder.add(new SLRQuery(new Term(field, key), value), BooleanClause.Occur.SHOULD);
+            }
+        } else {
+            // Use python model to obtain the SLR
+            HashMap<String, Double> querySLR = getQuerySLR(queryText);
         }
-      
         return builder.build();
+    }
+
+    private HashMap<String, Double> getQuerySLR(String query) {
+        HashMap<String, Double> querySLR = new HashMap<String, Double>(query.split(" ").length);
+        try {
+            Process pythonMod = Runtime.getRuntime().exec("cd .");
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonMod.getInputStream()));
+        } catch (IOException e) {
+            LOG.error("Python module could not be executed!");
+        }
+        
+
+        return querySLR;
     }
 }
 
