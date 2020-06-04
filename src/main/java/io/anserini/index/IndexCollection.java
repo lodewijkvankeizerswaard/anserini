@@ -174,6 +174,8 @@ public final class IndexCollection {
         FileSegment<SourceDocument> segment = collection.createFileSegment(inputFile);
         // in order to call close() and clean up resources in case of exception
         this.fileSegment = segment;
+        
+        long avgTime = 0;
 
         for (SourceDocument d : segment) {
           if (!d.indexable()) {
@@ -209,13 +211,21 @@ public final class IndexCollection {
             continue;
           }
 
+          long startTime = System.nanoTime();
           if (args.uniqueDocid) {
             writer.updateDocument(new Term("id", d.id()), doc);
           } else {
             writer.addDocument(doc);
           }
+          long endTime = System.nanoTime();
           cnt++;
           batch++;
+          avgTime += endTime - startTime;
+
+          if (batch % 100 == 0 ) {
+            LOG.info("Average doc time: " + avgTime / 100);
+            avgTime = 0;
+          }
 
           // And the counts from this batch, reset batch counter.
           if (batch % 10000 == 0) {
