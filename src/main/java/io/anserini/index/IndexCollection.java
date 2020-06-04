@@ -745,7 +745,7 @@ public final class IndexCollection {
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer, CharArraySet.EMPTY_SET) :
           DefaultEnglishAnalyzer.newStemmingInstance(args.stemmer);
       final TweetAnalyzer tweetAnalyzer = new TweetAnalyzer(args.tweetStemming);
-      final SLRAnalyzer slrAnalyzer = new SLRAnalyzer(args.SLRIndexDecimals);
+      final SLRAnalyzer slrAnalyzer = new SLRAnalyzer(args.slrIndexDecimals);
 
       final IndexWriterConfig config;
       if (args.collectionClass.equals("TweetCollection")) {
@@ -764,15 +764,15 @@ public final class IndexCollection {
         config = new IndexWriterConfig(germanAnalyzer);
       } else if (args.language.equals("es")) {
         config = new IndexWriterConfig(spanishAnalyzer);
-      } else if (args.SLRIndex) {
+      } else if (args.slr) {
         config = new IndexWriterConfig(slrAnalyzer);
       } else {
         config = new IndexWriterConfig(analyzer);
       }
       if (args.bm25Accurate) {
         config.setSimilarity(new AccurateBM25Similarity()); // necessary during indexing as the norm used in BM25 is already determined at index time.
-      } else if (args.appendSLR) {
-        config.setSimilarity(new SLRSimilarity(args.SLRIndexDecimals));
+      } else if (args.slr) {
+        config.setSimilarity(new SLRSimilarity(args.slrIndexDecimals));
       } else {
         config.setSimilarity(new BM25Similarity());
       }

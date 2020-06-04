@@ -36,6 +36,9 @@
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.Math;
 import java.util.Arrays;
 /**
@@ -57,45 +60,40 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
    */
   public SLRGenerator(IndexArgs args) {
     this.args = args;
+    LOG.info("Using python model: " + args.slrModel);
   }
 
-  // dummy method for getting sparse representations
-  static double[] SparseLatentRepresentation(String contents, int dim, double sparsity_ratio) {
-    double[] SLR = new double[dim];
-    for (int i = 0 ; i < dim; i++) {
-      double rand = Math.random();
-      if (rand > sparsity_ratio) {
-        SLR[i] = rand;
-      } else {
-        SLR[i] = 0;
-      }
-    }
-    return SLR;
-  }
-
-  static String createSparseRep(double SLR[]) {
+  static String slrToContent(Map<String, Float> SLR) {
     String rep = "";
-    for (int i = 0; i < SLR.length; i++) {
-      if(SLR[i] != 0) {
-        rep += " " + String.valueOf(i) + String.valueOf(SLR[i]);
-      }
+    for(Map.Entry<String, Float> cursor : SLR.entrySet()) {
+      rep += " " + cursor.getKey() + cursor.getValue();
     }
     return rep;
   }
 
-  static String createSparseContents(double SLR[], int num_of_decimals) {
-    // create string containing which latent dimensions are active
-    // treat dimension values like word frequencies
-    String sparseContents = "";
-    double toIntFactor = Math.pow(10, num_of_decimals);
-    for (int i = 0; i < SLR.length; i++) {
-      // cast dimension value to int
-      int dimensionCount = (int) Math.round(SLR[i] * toIntFactor);
-      for (int j = 0; j < dimensionCount; j++) {
-        sparseContents += " " + String.valueOf(i);
+  private Map<String, Float> getContentSLR(String content) {
+    Map<String, Float> slrMap = new HashMap<String, Float>(1000);
+    String output = null;
+    try {
+
+      Process pythonModel = Runtime.getRuntime().exec("python3 " + args.slrModel + " -content " + content);
+      BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
+      output = stdInput.readLine();
+
+      if(output == null)
+        throw new IOException("Model execution not succesfull");
+      LOG.info(stdInput.readLine());
+      String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
+
+      for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
+        slrMap.put(slr[i], Float.parseFloat(slr[i + 1]));
       }
+
+    } catch (IOException e) {
+      LOG.error("Python module could not be executed!");
     }
-    return sparseContents;
+
+    return slrMap;
   }
 
   @Override
@@ -138,15 +136,19 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
     }
 
-    double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
+    // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
+
+    LOG.info(contents);
+
+    Map<String, Float> SLR = getContentSLR(contents);
     
 
-    if (args.storeRaw || args.appendSLR) {
+    if (args.storeRaw || args.slrAppend) {
       Map<String, String> dictionary = new HashMap<String, String>();
 
       // Are we storing the sparse latent representation seperately?
-	    if (args.appendSLR) {
-      	dictionary.put("slr", Arrays.toString(SLR));
+	    if (args.slrAppend) {
+      	dictionary.put("slr", SLR.toString());
       }
 
       if (args.storeRaw) {
@@ -157,13 +159,10 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     }
 
     // Are we making a neural or traditional index?
-    if(args.SLRIndexOld) {
-      // index on sparse latent dimensions
-      String sparseContents = createSparseContents(SLR, args.SLRIndexDecimals);
-      document.add(new Field(IndexArgs.CONTENTS, sparseContents, fieldType));
-    } else if(args.SLRIndex) {
-      String sparseRep = createSparseRep(SLR);
+    if(args.slrIndex) {
+      String sparseRep = slrToContent(SLR);
       document.add(new Field(IndexArgs.CONTENTS, sparseRep, fieldType));
+      LOG.info(sparseRep);
     } else {
       document.add(new Field(IndexArgs.CONTENTS, contents, fieldType));
     }

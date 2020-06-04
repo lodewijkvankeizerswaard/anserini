@@ -219,19 +219,27 @@ public class IndexArgs {
   public int shardCurrent = -1;
 
   // Sparse Latent Representation options
-  @Option(name = "-appendSLR",
+  @Option(name = "-slr",
+    usage = "Computes the SLR of every document using -slr.model. Either used term based indexing (with -appendSLR), or indexes on slr vector indices (with -slr.index)")
+  public boolean slr = false;
+
+  @Option(name = "-slr.model", metaVar = "[model]",
+      usage = "The model (python3 script) to use for computing the slr. Call will look like: python3 [model] -content ...")
+  public String slrModel = "python/slr_dummy_model.py";
+
+  @Option(name = "-slr.append",
       usage = "Boolean switch to append sparse latent representations to the index; only used in SLRGenerator")
-  public boolean appendSLR = false;
+  public boolean slrAppend = false;
 
-  @Option(name = "-SLRIndexOld",
+  @Option(name = "-slr.indexOld",
       usage = "Boolean switch to index on neural representations")
-  public boolean SLRIndexOld = false;
+  public boolean slrIndexOld = false;
 
-  @Option(name = "-SLRIndex",
+  @Option(name = "-slr.index",
       usage = "Boolean switch to index on neural representations")
-  public boolean SLRIndex = false;
+  public boolean slrIndex = false;
 
-  @Option(name = "-SLRDecimalPrecision", metaVar = "[k]",
+  @Option(name = "-slr.decimalPrecision", metaVar = "[k]",
       usage = "Decimal precision of dimension values for neural-based indexing.")
-  public int SLRIndexDecimals = 2;
+  public int slrIndexDecimals = 2;
 }
