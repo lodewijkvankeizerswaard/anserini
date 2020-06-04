@@ -464,7 +464,7 @@ public final class SearchCollection implements Closeable {
     if (qc == QueryConstructor.SequentialDependenceModel) {
       query = new SdmQueryGenerator(args.sdm_tw, args.sdm_ow, args.sdm_uw).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else if (qc == QueryConstructor.SparseRepresentation) {
-      query = new SLRQueryGenerator(args.slr_py).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
+      query = new SLRQueryGenerator(args.slr_model).buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     } else {
       query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, queryString);
     }

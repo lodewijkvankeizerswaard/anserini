@@ -18,12 +18,9 @@
 
 package io.anserini.search.latent;
 
-import io.anserini.analysis.AnalyzerUtils;
-import io.anserini.search.latent.SparseLatentQuery;
 import io.anserini.search.query.QueryGenerator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
-import io.anserini.search.latent.SLRQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.index.Term;
@@ -36,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 
 // IN -> 3:0.9 50:0.89 72:0.99
 // multi term query
@@ -68,7 +64,7 @@ public class SLRQueryGenerator extends QueryGenerator {
     }
 
     private Map<String, Float> getQuerySLR(String query) {
-        Map<String, Float> querySLR = new HashMap<String, Float>(query.split(" ").length);
+        Map<String, Float> querySLR = new HashMap<String, Float>(query.split(" ").length); // This initial capacity only makes sense for preprocces input
         if(pythonCommand == ""){ // preprocessed input 
             String[] indices = query.split(" ");
 
@@ -78,11 +74,15 @@ public class SLRQueryGenerator extends QueryGenerator {
             }
 
         } else { // running python model
+            String output = null;
             try {
 
-                Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand);
+                Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand + " -content " + query);
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
-                String[] slr = stdInput.readLine().replaceAll("[\\[(),\\]]", "").split(" ");
+                output = stdInput.readLine();
+                if(output == null)
+                    throw new IOException("Model execution not succesfull");
+                String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
 
                 for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
                     querySLR.put(slr[i], Float.parseFloat(slr[i + 1]));
@@ -96,23 +96,3 @@ public class SLRQueryGenerator extends QueryGenerator {
         return querySLR;
     }
 }
-
-
-// Old implementation
-// public class SparseReprQueryGenerator extends QueryGenerator {
-//     private static final Logger LOG = LogManager.getLogger(SparseReprQueryGenerator.class);
-//     @Override
-//     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
-// //       Map<String, Float> dictionary = new HashMap<String, Float>();
-//       String[] indices = queryText.split(" ");
-      
-//       for (String ind : indices) {
-//         String[] keyValue = ind.split(":");
-//         dictionary.put(keyValue[0], Float.parseFloat(keyValue[1]));
-//       }
-      
-//       LOG.info("Generating query for: " + field + " containing " + queryText);
-//       LOG.info(dictionary.toString());
-//       return new SparseLatentQuery(dictionary, field);
-//     }
-// }
