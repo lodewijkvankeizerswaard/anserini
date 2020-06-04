@@ -59,6 +59,10 @@ public class SLRTokenizer extends Tokenizer{
 
     public int SLRmultiplier;
 
+    private char[] tokenBuffer;
+    private char[] valueBuffer;
+
+
     public SLRTokenizer(){
         init();
     }
@@ -109,13 +113,14 @@ public class SLRTokenizer extends Tokenizer{
     }
 
     private void init() {
-        this.scanner = new StandardTokenizerImpl(input);
-        this.SLRmultiplier = (int) Math.round(Math.pow(10, 7));
+        init(7);
     }
 
     private void init(int decPrecision) {
         this.scanner = new StandardTokenizerImpl(input);
         this.SLRmultiplier = (int) Math.round(Math.pow(10, decPrecision));
+        tokenBuffer = new char[5]; // up to 10000 dimensions
+        valueBuffer = new char[10]; // 9 digits + a . for each float
     }
 
     // this tokenizer generates three attributes:
@@ -146,14 +151,9 @@ public class SLRTokenizer extends Tokenizer{
             if (scanner.yylength() <= maxTokenLength) {
                 posIncrAtt.setPositionIncrement(skippedPositions+1);
                 scanner.getText(termAtt);
-                // LOG.info("input:" + termAtt.toString());
 
                 char [] slrValue = getSLRValue(termAtt.buffer());
                 Float termValue = Float.parseFloat(String.valueOf(slrValue)) * SLRmultiplier;
-                // LOG.info("Parsed double: " + Double.parseDouble(String.valueOf(slrValue)));
-                // LOG.info("SLRmultiplier: " + SLRmultiplier);
-                // LOG.info("value: " + String.valueOf(termValue));
-                // LOG.info("intval: " + (int) Math.round(termValue));
                 freqAtt.setTermFrequency((int) Math.round(termValue));
 
                 char [] slrToken = getSLRToken(termAtt.buffer());
