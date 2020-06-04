@@ -82,7 +82,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
       if(output == null)
         throw new IOException("Model execution not succesfull");
-      LOG.info(stdInput.readLine());
       String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
 
       for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
@@ -138,8 +137,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
 
-    LOG.info(contents);
-
     Map<String, Float> SLR = getContentSLR(contents);
     
 
@@ -162,7 +159,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     if(args.slrIndex) {
       String sparseRep = slrToContent(SLR);
       document.add(new Field(IndexArgs.CONTENTS, sparseRep, fieldType));
-      LOG.info(sparseRep);
     } else {
       document.add(new Field(IndexArgs.CONTENTS, contents, fieldType));
     }
