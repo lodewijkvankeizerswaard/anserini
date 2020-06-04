@@ -1,2 +1,2 @@
 #!/bin/sh
-mvn clean package appassembler:assemble -DadditionalJOption=-Xdoclint:none
+mvn clean package appassembler:assemble -DadditionalJOption=-Xdoclint:none -DskipTests
