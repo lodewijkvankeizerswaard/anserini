@@ -49,6 +49,7 @@ import java.util.Arrays;
 public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGenerator<T> {
   protected IndexArgs args;
   private static final Logger LOG = LogManager.getLogger(SLRGenerator.class);
+  private Map<String, String> slrMap;
 
   protected SLRGenerator() {
   }
@@ -61,35 +62,35 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
   public SLRGenerator(IndexArgs args) {
     this.args = args;
     LOG.info("Using python model: " + args.slrModel);
+    slrMap = new HashMap<String, String>(100);
   }
 
-  static String slrToContent(Map<String, Float> SLR) {
+  static String slrToContent(Map<String, String> SLR) {
     String rep = "";
-    for(Map.Entry<String, Float> cursor : SLR.entrySet()) {
+    for(Map.Entry<String, String> cursor : SLR.entrySet()) {
       rep += " " + cursor.getKey() + cursor.getValue();
     }
     return rep;
   }
 
-  private Map<String, Float> getContentSLR(String content) {
-    Map<String, Float> slrMap = new HashMap<String, Float>(1000);
+  private Map<String, String> getContentSLR(String content) {
     String output = null;
+    slrMap.clear();
     try {
 
       Process pythonModel = Runtime.getRuntime().exec("python3 " + args.slrModel + " -content " + content);
       BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
       output = stdInput.readLine();
-
       if(output == null)
         throw new IOException("Model execution not succesfull");
       String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
 
-      for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
-        slrMap.put(slr[i], Float.parseFloat(slr[i + 1]));
+      for(int i = 0; i < slr.length; i+=2) {
+        slrMap.put(slr[i], slr[i + 1]);
       }
 
     } catch (IOException e) {
-      LOG.error("Python module could not be executed!");
+      LOG.error("Error while executing python module!");
     }
 
     return slrMap;
@@ -137,7 +138,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
 
-    Map<String, Float> SLR = getContentSLR(contents);
+    Map<String, String> SLR = getContentSLR(contents);
     
 
     if (args.storeRaw || args.slrAppend) {
