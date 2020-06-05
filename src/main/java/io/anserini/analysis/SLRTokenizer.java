@@ -1,6 +1,7 @@
 package io.anserini.analysis;
 
 import java.io.IOException;
+import java.nio.CharBuffer;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizerImpl;
@@ -53,11 +54,11 @@ public class SLRTokenizer extends Tokenizer{
     /** Absolute maximum sized token */
     public static final int MAX_TOKEN_LENGTH_LIMIT = 1024 * 1024;
     
+    public static final int SLR_TOKEN_LENGHT = 5; // up to 10000 dimensions 
+    
     private int skippedPositions;
 
     private int maxTokenLength = StandardAnalyzer.DEFAULT_MAX_TOKEN_LENGTH;
-
-    public int SLRmultiplier;
 
     private char[] tokenBuffer;
     private char[] valueBuffer;
@@ -118,9 +119,8 @@ public class SLRTokenizer extends Tokenizer{
 
     private void init(int decPrecision) {
         this.scanner = new StandardTokenizerImpl(input);
-        this.SLRmultiplier = (int) Math.round(Math.pow(10, decPrecision));
-        tokenBuffer = new char[5]; // up to 10000 dimensions
-        valueBuffer = new char[10]; // 9 digits + a . for each float
+        tokenBuffer = new char[SLR_TOKEN_LENGHT]; 
+        valueBuffer = new char[decPrecision]; // store value directly as an int (without the leading '0.')
     }
 
     // this tokenizer generates three attributes:
@@ -152,12 +152,12 @@ public class SLRTokenizer extends Tokenizer{
                 posIncrAtt.setPositionIncrement(skippedPositions+1);
                 scanner.getText(termAtt);
 
-                char [] slrValue = getSLRValue(termAtt.buffer());
-                Float termValue = Float.parseFloat(String.valueOf(slrValue)) * SLRmultiplier;
-                freqAtt.setTermFrequency((int) Math.round(termValue));
+                getSLRValue(termAtt.buffer());
+                int val = Integer.parseInt(CharBuffer.wrap(valueBuffer), 0, valueBuffer.length, 10);
+                freqAtt.setTermFrequency(val);
 
-                char [] slrToken = getSLRToken(termAtt.buffer());
-                termAtt.copyBuffer(slrToken, 0, slrToken.length);
+                getSLRToken(termAtt.buffer());
+                termAtt.copyBuffer(tokenBuffer, 0, tokenBuffer.length);
                 
                 final int start = scanner.yychar();
                 offsetAtt.setOffset(correctOffset(start), correctOffset(start+termAtt.length()));
@@ -178,21 +178,19 @@ public class SLRTokenizer extends Tokenizer{
         return -1;
     }
 
-    private char[] getSLRToken(char[] buffer) {
+    private void getSLRToken(char[] buffer) {
         int valStart = getSLRDotPos(buffer) - 1;
-        char[] result = new char[valStart];
-        for(int i = 0; i < result.length; i++)
-            result[i] = buffer[i];
-        return result;
+        int zeroPaddingLenght = SLR_TOKEN_LENGHT - valStart;
+        for(int i = 0; i < tokenBuffer.length; i++) {
+            tokenBuffer[i] = (i < zeroPaddingLenght) ? '0' : buffer[i - zeroPaddingLenght];
+        }
     }
 
-    private char[] getSLRValue(char[] buffer) {
-        int valStart = getSLRDotPos(buffer) - 1;
-        char[] result = new char[10]; // Strings of Floats are 10 chars long
-        for(int i = 0; i < result.length; i++) {
-            result[i] = buffer[i + valStart];
+    private void getSLRValue(char[] buffer) {
+        int decimalStart = getSLRDotPos(buffer) + 1;
+        for(int i = 0; i < valueBuffer.length; i++) {
+            valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
         }
-        return result;
     }
     
     @Override
