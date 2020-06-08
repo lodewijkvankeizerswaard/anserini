@@ -223,9 +223,13 @@ public class IndexArgs {
     usage = "Computes the SLR of every document using -slr.model. Either used term based indexing (with -appendSLR), or indexes on slr vector indices (with -slr.index)")
   public boolean slr = false;
 
-  @Option(name = "-slr.model", metaVar = "[model]",
+  @Option(name = "-slr.reprFilePath", forbids = {"-slr.model"},
+      usage = "The path to the file containing the slr's of all the documents")
+  public String slrFilePath = "";
+
+  @Option(name = "-slr.model", metaVar = "[model]", forbids = {"-slr.reprFilePath"},
       usage = "The model (python3 script) to use for computing the slr. Call will look like: python3 [model] -content ...")
-  public String slrModel = "python/slr_dummy_model.py";
+  public String slrModel = "";
 
   @Option(name = "-slr.append",
       usage = "Boolean switch to append sparse latent representations to the index; only used in SLRGenerator")

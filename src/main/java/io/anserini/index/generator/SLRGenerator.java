@@ -41,6 +41,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Math;
 import java.util.Arrays;
+
+// import org.pytorch.Tensor;
+// import org.pytorch.IValue;
+// import org.pytorch.Module;
+
+import java.io.File;  
+import java.util.Scanner; 
+
 /**
  * Converts a {@link SourceDocument} into a Lucene {@link Document}, ready to be indexed.
  *
@@ -50,6 +58,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
   protected IndexArgs args;
   private static final Logger LOG = LogManager.getLogger(SLRGenerator.class);
   private Map<String, String> slrMap;
+  private File slrFile;
+  private Scanner slrFileScanner;
+  private String[] currentFileLine;
+  private int currentLineNr;
+  private boolean usingModel = false, usingFile = false;
 
   protected SLRGenerator() {
   }
@@ -59,21 +72,52 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
    *
    * @param args configuration arguments
    */
-  public SLRGenerator(IndexArgs args) {
+  public SLRGenerator(IndexArgs args) throws Exception{
+    if(!(args.slrModel == "" ^ args.slrFilePath == ""))
+      throw new Exception("The SLR generator needs a python model or a representation file!");
+    
     this.args = args;
-    LOG.info("Using python model: " + args.slrModel);
     slrMap = new HashMap<String, String>(100);
-  }
 
-  static String slrToContent(Map<String, String> SLR) {
-    String rep = "";
-    for(Map.Entry<String, String> cursor : SLR.entrySet()) {
-      rep += " " + cursor.getKey() + cursor.getValue();
+    if(args.slrFilePath != "") { // Reading slr's from file
+      LOG.info("Reading representations from: " + args.slrFilePath);
+      usingFile = true;
+
+      slrFile = new File(args.slrFilePath);
+      currentLineNr = 0;
+      try {
+        slrFileScanner = new Scanner(slrFile);
+      } catch(Exception e) {
+        LOG.error("Could not read the slr file!");
+      }
+    } else if(args.slrModel != "") { // Using python model to compute slr
+      LOG.info("Using python model: " + args.slrModel);
+      usingModel = true;
+      // slrModel = Module.load(args.slrModel);
     }
-    return rep;
+    
   }
 
-  private Map<String, String> getContentSLR(String content) {
+  private void getSLRFromFile(String docID){
+    slrMap.clear();
+    currentLineNr = 0;
+    while(slrFileScanner.hasNextLine()) {
+      currentFileLine = slrFileScanner.nextLine().split("\\t");
+
+      if(currentFileLine[0].equals(docID)) {
+
+        for(int i = 1; i < currentFileLine.length; i++) {
+          if(Float.parseFloat(currentFileLine[i]) != 0)
+            slrMap.put(Integer.toString(i-1), currentFileLine[i]);
+        }
+        if(currentLineNr > 0)
+          LOG.info("Missed " + currentLineNr + "times");
+        break;
+      }
+      currentLineNr++;
+    }
+  }
+  private void getSLRFromModel(String content) {
     String output = null;
     slrMap.clear();
     try {
@@ -92,9 +136,17 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     } catch (IOException e) {
       LOG.error("Error while executing python module!");
     }
-
-    return slrMap;
   }
+
+  private String slrToContent() {
+    String rep = "";
+    for(Map.Entry<String, String> cursor : slrMap.entrySet()) {
+      rep += " " + cursor.getKey() + cursor.getValue();
+    }
+    return rep;
+  }
+
+
 
   @Override
   public Document createDocument(T src) throws GeneratorException {
@@ -137,8 +189,10 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     }
 
     // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
-
-    Map<String, String> SLR = getContentSLR(contents);
+    if(usingFile)
+      getSLRFromFile(id);
+    if(usingModel)
+      getSLRFromModel(contents);
     
 
     if (args.storeRaw || args.slrAppend) {
@@ -146,7 +200,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
       // Are we storing the sparse latent representation seperately?
 	    if (args.slrAppend) {
-      	dictionary.put("slr", SLR.toString());
+      	dictionary.put("slr", slrMap.toString());
       }
 
       if (args.storeRaw) {
@@ -158,7 +212,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     // Are we making a neural or traditional index?
     if(args.slrIndex) {
-      String sparseRep = slrToContent(SLR);
+      String sparseRep = slrToContent();
       document.add(new Field(IndexArgs.CONTENTS, sparseRep, fieldType));
     } else {
       document.add(new Field(IndexArgs.CONTENTS, contents, fieldType));
