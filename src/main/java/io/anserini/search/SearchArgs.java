@@ -202,10 +202,10 @@ public class SearchArgs {
   public boolean slr = false;
 
   @Option(name = "-slr.model", usage = "python model and arguments to obtain the query SLR. If not present, preprocessed input is assumed")
-  public String slr_model = "python/slr_dummy_model.py";
+  public String slr_model = "";
 
   @Option(name = "-slr.ip", metaVar = "[value]", usage = "SLR decimal index precision (default=5)")
-  public int slr_index_precision = 5;
+  public int slr_index_precision = 7;
 
   // --------------------------
   // query expansion model: rm3
