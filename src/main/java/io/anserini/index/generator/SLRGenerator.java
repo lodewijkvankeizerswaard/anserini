@@ -107,6 +107,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       if(currentFileLine[0].equals(docID)) {
 
         for(int i = 1; i < currentFileLine.length; i++) {
+          LOG.info(currentFileLine[i]);
           if(Float.parseFloat(currentFileLine[i]) != 0)
             slrMap.put(Integer.toString(i-1), currentFileLine[i]);
         }
