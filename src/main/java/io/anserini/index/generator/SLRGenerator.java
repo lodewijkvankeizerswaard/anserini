@@ -114,6 +114,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
         if(currentLineNr > 0)
           LOG.info("Missed " + currentLineNr + "times");
         break;
+      } else {
+        LOG.info("Miss: " + currentFileLine[0] + " != " + docID);
       }
       currentLineNr++;
     }
