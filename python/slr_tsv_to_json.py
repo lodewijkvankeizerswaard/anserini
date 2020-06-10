@@ -1,13 +1,12 @@
 import json
-import sys as os
+from pathlib import Path
 
 input_folder = "data/"
 input_file = "dummy_slr_robust04.txt"
 output_folder = "data/robust04_json"
 docs_per_file = 10
 
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+Path(output_folder).mkdir(parents=True, exist_ok=True)
 
 fr = open(input_folder + input_file, 'r')
 
