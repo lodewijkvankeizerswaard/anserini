@@ -73,8 +73,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
    * @param args configuration arguments
    */
   public SLRGenerator(IndexArgs args) throws Exception{
-    if(!(args.slrModel == "" ^ args.slrFilePath == ""))
-      throw new Exception("The SLR generator needs a python model or a representation file!");
+    // if(!(args.slrModel == "" ^ args.slrFilePath == ""))
+    //   throw new Exception("The SLR generator needs a python model or a representation file!");
     
     this.args = args;
     slrMap = new HashMap<String, String>(100);
@@ -94,6 +94,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       LOG.info("Using python model: " + args.slrModel);
       usingModel = true;
       // slrModel = Module.load(args.slrModel);
+    } else {
+      LOG.info("Reading representations from contents!");
     }
     
   }
