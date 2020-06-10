@@ -33,7 +33,7 @@ for line in fr:
         fw.write(json.dumps(doc_list))
         fw.close()
         file_nr += 1
-        file_suffix = str(file_count * docs_per_file) + ".json"
+        file_suffix = str(file_nr * docs_per_file) + ".json"
         print("Writing to file: " + output_file_base + file_suffix)
         fw = open(output_file_base + file_suffix, 'a')
 
