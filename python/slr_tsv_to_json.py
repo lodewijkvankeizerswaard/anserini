@@ -5,10 +5,9 @@ fw = open("data/dummy_slr_file_0.tsv", 'a')
 line_count = 0
 
 for line in fr:
-    vals = line.split("\t")
-    val_dict = {}
-    val_dict['id'] = vals[0]
-    val_dict['contents'] = vals[1:]
+    line_id = line.split("\t")[0]
+    line_vals = line[ line.index("\t") :]
+    val_dict = {'id' : line_id, 'contents' : line_vals}
 
     print(val_dict)
 
