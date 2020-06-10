@@ -1,19 +1,35 @@
 import json
+import sys as os
 
-fr = open("data/dummy_slr_file.txt", 'r')
-fw = open("data/dummy_slr_file_0.tsv", 'a')
+input_folder = "data/"
+input_file = "dummy_slr_robust04.txt"
+output_folder = "data/robust04_json"
+docs_per_file = 10
+
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+fr = open(input_folder + input_file, 'r')
+
+print("Reading from file: " + input_folder + input_file)
 
 line_count = 0
+file_count = 0
+
+output_file_base = input_file[: input_file.rfind('.')]
+fw = open(output_folder + output_file_base + "_0.json", 'a')
+
+print("Writing to file: " + output_folder + output_file_base + "_0.json")
 
 doc_list = []
 
 for line in fr:
     line_id = line.split("\t")[0]
-    line_vals = line[ line.index("\t") :]
+    line_vals = line[ line.index("\t") + 1 :]
     val_dict = {'id' : line_id, 'contents' : line_vals[0:10]}
     doc_list.append(val_dict)
 
-print(json.dumps(doc_list))
+print(json.dumps(doc_list[0:10]))
 
 fr.close()
 fw.close()
