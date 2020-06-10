@@ -2,7 +2,7 @@ import numpy as np
 import subprocess
 
 def dummy_slr_arr(val):
-    slr = np.full(1000, val * 10**-5)
+    slr = np.full(1000, val)
     return slr
 
 def slr_to_string(arr):
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     # print("End:" + str(nr_docs))
 
     for i, doc_id in enumerate(doc_id_list):
-        
-        write_slr_line(f, doc_id, dummy_slr_arr(i / len(doc_id_list)))
+        val = (i / len(doc_id_list)) * 0.000001
+        write_slr_line(f, doc_id, dummy_slr_arr(val))
 
         # if i % 100000 == 0:
         #     print("Pogres: " + str(i/(nr_docs - start + 1)*100) + "%")
