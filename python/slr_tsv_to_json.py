@@ -3,7 +3,7 @@ from pathlib import Path
 
 input_folder = "data/"
 input_file = "dummy_slr_robust04.txt"
-output_folder = "data/robust04_json"
+output_folder = "data/robust04_json/"
 docs_per_file = 10
 
 Path(output_folder).mkdir(parents=True, exist_ok=True)
@@ -15,8 +15,8 @@ print("Reading from file: " + input_folder + input_file)
 line_count = 0
 file_count = 0
 
-output_file_base = input_file[: input_file.rfind('.')]
-fw = open(output_folder + output_file_base + "_0.json", 'a')
+output_file_base = input_file[: input_file.rfind('.')] + "_"
+fw = open(output_folder + output_file_base + "0.json", 'a')
 
 print("Writing to file: " + output_folder + output_file_base + "_0.json")
 
@@ -28,7 +28,18 @@ for line in fr:
     val_dict = {'id' : line_id, 'contents' : line_vals[0:10]}
     doc_list.append(val_dict)
 
-print(json.dumps(doc_list[0:10]))
+    line_count += 1
+    if line_count >= docs_per_file:
+        fw.write(json.dumps(doc_list))
+        fw.close()
+        file_suffix = str(file_count * docs_per_file) + ".json"
+        fw.open(output_folder + output_file_base + file_suffix , 'a')
+
+        file_count += 1
+        line_count = 0
+    
+    if file_count > 3:
+        break
 
 fr.close()
 fw.close()
