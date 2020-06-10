@@ -2,7 +2,7 @@ import numpy as np
 import subprocess
 
 def dummy_slr_arr(val):
-    slr = np.full.(1000, val)
+    slr = np.full(1000, val)
     return slr
 
 def slr_to_string(arr):
