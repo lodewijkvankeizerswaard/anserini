@@ -202,7 +202,7 @@ public class SLRTokenizer extends Tokenizer{
                 valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
             }
         } else {
-            LOG.info(tokenBuffer);
+            LOG.info(String.valueOf(tokenBuffer));
             char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
             String exponentStr = String.valueOf(exponentChar);
             Integer exponent = Integer.parseInt(exponentStr);
