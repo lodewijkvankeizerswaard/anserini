@@ -179,7 +179,7 @@ public class SLRTokenizer extends Tokenizer{
     }
 
     private int valueHasExponent(char[] buffer) {
-        for(int i = 0; i < buffer.lenght; i++) {
+        for(int i = 0; i < buffer.length; i++) {
             if(buffer[i] == 'E') 
                 return i;
         }
