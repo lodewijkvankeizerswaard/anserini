@@ -178,6 +178,14 @@ public class SLRTokenizer extends Tokenizer{
         return -1;
     }
 
+    private int valueHasExponent(char[] buffer) {
+        for(int i = 0; i < buffer.lenght; i++) {
+            if(buffer[i] == 'E') 
+                return i;
+        }
+        return -1;
+    }
+
     private void getSLRToken(char[] buffer) {
         int valStart = getSLRDotPos(buffer) - 1;
         int zeroPaddingLenght = SLR_TOKEN_LENGHT - valStart;
@@ -188,8 +196,18 @@ public class SLRTokenizer extends Tokenizer{
 
     private void getSLRValue(char[] buffer) {
         int decimalStart = getSLRDotPos(buffer) + 1;
-        for(int i = 0; i < valueBuffer.length; i++) {
-            valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
+        int exponentStart = valueHasExponent(buffer) + 1;
+        if(exponentStart == -1) {
+            for(int i = 0; i < valueBuffer.length; i++) {
+                valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
+            }
+        } else {
+            String exponentStr = new String({buffer[exponentStart + 1], buffer[exponentStart + 2]});
+            Integer exponent = Integer.parseInt(exponentChar);
+            for(int i = 0; i < tokenBuffer.length; i++) {
+                tokenBuffer[i] = (i < exponent - 1) ? '0' : buffer[i - exponent - 1];
+            }
+            LOG.info(tokenBuffer);
         }
     }
     
