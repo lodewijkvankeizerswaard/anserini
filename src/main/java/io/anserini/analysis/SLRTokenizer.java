@@ -204,7 +204,7 @@ public class SLRTokenizer extends Tokenizer{
         } else {
             char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
             String exponentStr = String.valueOf(exponentChar);
-            LOG.info("input:" + String.valueOf(buffer) + " expo:" + exponentStr);
+            LOG.info("input:" + String.valueOf(buffer) + " expoStart:" + exponentStart + " expo:" + exponentStr);
             Integer exponent = Integer.parseInt(exponentStr);
             
 
