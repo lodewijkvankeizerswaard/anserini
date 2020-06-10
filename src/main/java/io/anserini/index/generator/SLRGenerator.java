@@ -104,8 +104,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     slrMap.clear();
     String[] splitValues = content.split("\\t");
     for(int i = 0; i < splitValues.length; i++) {
-      if(Float.parseFloat(splitValues[i]) != 0)
+      LOG.info(splitValues[i]);
+      if(Float.parseFloat(splitValues[i]) != 0) {
         slrMap.put(Integer.toString(i), splitValues[i]);
+
+      }
     }
 }
 
