@@ -196,7 +196,7 @@ public class SLRTokenizer extends Tokenizer{
 
     private void getSLRValue(char[] buffer) {
         int decimalStart = getSLRDotPos(buffer) + 1;
-        int exponentStart = valueHasExponent(buffer) + 1;
+        int exponentStart = valueHasExponent(buffer);
         if(exponentStart == -1) {
             for(int i = 0; i < valueBuffer.length; i++) {
                 valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
