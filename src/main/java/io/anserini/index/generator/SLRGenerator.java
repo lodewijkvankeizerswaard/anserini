@@ -106,9 +106,14 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     String[] splitValues = content.split("\\t");
     for(int i = 0; i < splitValues.length; i++) {
       if(splitValues[i] != null && !splitValues[i].isEmpty() && splitValues[i] != "\n") {
-        LOG.info(splitValues[i]);
-        if(Float.parseFloat(splitValues[i]) != 0)
-          slrMap.put(Integer.toString(i), splitValues[i]);
+        // LOG.info(splitValues[i]);
+        try {
+          if(Float.parseFloat(splitValues[i]) != 0)
+            slrMap.put(Integer.toString(i), splitValues[i]);
+        } catch(Exception e) {
+          
+        }
+        
       }  
     }
 }
