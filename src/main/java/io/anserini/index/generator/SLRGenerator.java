@@ -62,7 +62,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
   private Scanner slrFileScanner;
   private String[] currentFileLine;
   private int currentLineNr;
-  private boolean usingModel = false, usingFile = false;
+  private boolean usingModel = false, usingFile = false, usingContents = false;
 
   protected SLRGenerator() {
   }
@@ -96,6 +96,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       // slrModel = Module.load(args.slrModel);
     } else {
       LOG.info("Reading representations from contents!");
+      usingContents = true;
     }
     
   }
@@ -104,11 +105,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     slrMap.clear();
     String[] splitValues = content.split("\\t");
     for(int i = 0; i < splitValues.length; i++) {
-      LOG.info(splitValues[i]);
-      if(Float.parseFloat(splitValues[i]) != 0) {
+      if(Float.parseFloat(splitValues[i]) != 0)
         slrMap.put(Integer.toString(i), splitValues[i]);
-
-      }
     }
 }
 
@@ -207,9 +205,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
     if(usingFile)
-      getSLRFromContent(contents);
+      getSLRFromFile(id);
     if(usingModel)
       getSLRFromModel(contents);
+    if(usingContents)
+      getSLRFromContent(contents);
 
     LOG.info(slrMap);
     
