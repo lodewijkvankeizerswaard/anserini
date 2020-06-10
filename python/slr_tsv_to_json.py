@@ -4,7 +4,7 @@ from pathlib import Path
 input_folder = "data/"
 input_file = "dummy_slr_robust04.tsv"
 output_folder = "data/robust04_json/"
-docs_per_file = 10
+docs_per_file = 100000
 
 Path(output_folder).mkdir(parents=True, exist_ok=True)
 
