@@ -203,7 +203,7 @@ public class SLRTokenizer extends Tokenizer{
             }
         } else {
             char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
-            String exponentStr = new String(exponentChar);
+            String exponentStr = String.valueOf(exponentChar);
             Integer exponent = Integer.parseInt(exponentChar);
             for(int i = 0; i < tokenBuffer.length; i++) {
                 tokenBuffer[i] = (i < exponent - 1) ? '0' : buffer[i - exponent - 1];
