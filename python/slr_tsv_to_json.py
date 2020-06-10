@@ -16,9 +16,10 @@ line_count = 0
 file_count = 0
 
 output_file_base = input_file[: input_file.rfind('.')] + "_"
-fw = open(output_folder + output_file_base + "0.json", 'a')
+output_file_path = output_file_base 
+fw = open(output_file_path + "0.json", 'a')
 
-print("Writing to file: " + output_folder + output_file_base + "_0.json")
+print("Writing to file: " + output_file_path + "0.json")
 
 doc_list = []
 
@@ -33,7 +34,8 @@ for line in fr:
         fw.write(json.dumps(doc_list))
         fw.close()
         file_suffix = str(file_count * docs_per_file) + ".json"
-        fw = open(output_folder + output_file_base + file_suffix , 'a')
+        print("Writing to file: " + output_file_path + file_suffix)
+        fw = open(output_file_path + file_suffix, 'a')
 
         file_count += 1
         line_count = 0
