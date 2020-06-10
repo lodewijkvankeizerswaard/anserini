@@ -35,6 +35,7 @@ for line in fr:
         file_nr += 1
         file_suffix = str(file_nr * docs_per_file) + ".json"
         print("Writing to file: " + output_file_base + file_suffix)
+        doc_list = []
         fw = open(output_file_base + file_suffix, 'a')
 
         line_count = 0
