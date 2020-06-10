@@ -98,6 +98,15 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     
   }
 
+  private void getSLRFromContent(String content){
+    slrMap.clear();
+    String splitValues = content.split("\\t");
+    for(int i = 0; i < splitValues.length; i++) {
+      if(Float.parseFloat(splitValues[i]) != 0)
+        slrMap.put(Integer.toString(i), splitValues[i]);
+    }
+}
+
   private void getSLRFromFile(String docID){
     slrMap.clear();
     currentLineNr = 0;
@@ -193,9 +202,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     // double SLR[] = SparseLatentRepresentation(contents, 100, 0.9);
     if(usingFile)
-      getSLRFromFile(id);
+      getSLRFromContent(contents);
     if(usingModel)
       getSLRFromModel(contents);
+
+    LOG.info(slrMap);
     
 
     if (args.storeRaw || args.slrAppend) {
