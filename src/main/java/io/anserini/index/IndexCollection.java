@@ -791,7 +791,7 @@ public final class IndexCollection {
       config.setUseCompoundFile(false);
       config.setMergeScheduler(new ConcurrentMergeScheduler());
 
-      writer = new IndexWriter(dir, config);
+      writer = new IndexWriter(dir, config, IndexWriter.MaxFieldLength(Integer.MAX_VALUE));
     }
 
     final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
