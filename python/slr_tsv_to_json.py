@@ -40,5 +40,6 @@ for line in fr:
 
         line_count = 0
 
+fw.write(json.dumps(doc_list))
 fr.close()
 fw.close()
