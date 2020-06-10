@@ -3,7 +3,6 @@ import subprocess
 
 def dummy_slr_arr():
     slr = np.random.uniform(0, 1, size=1000)
-    slr[slr <= 0.9] = 0
     return slr
 
 def slr_to_string(arr):
@@ -32,7 +31,7 @@ if __name__ == "__main__":
     
     doc_id_file.close()
 
-    filename = "data/dummy_slr_robust04.txt"
+    filename = "data/dummy_slr_robust04.tsv"
     f = open(filename, "a")
 
     
