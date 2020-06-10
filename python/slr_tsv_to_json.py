@@ -15,7 +15,7 @@ print("Reading from file: " + input_folder + input_file)
 line_count = 0
 file_nr = 0
 
-output_file_base = input_file[: input_file.rfind('.')] + "_"
+output_file_base = output_folder + input_file[: input_file.rfind('.')] + "_"
 fw = open(output_file_base + "0.json", 'a')
 
 print("Writing to file: " + output_file_base + "0.json")
