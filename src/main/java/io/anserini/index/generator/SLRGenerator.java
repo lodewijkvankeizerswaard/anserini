@@ -110,12 +110,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     if(indexOfE == -1) {
       return input;
     }
-    String valString = input.substring(0, indexOfE);
-    String expoString = input.substring(indexOfE + 1, indexOfE + 4);
-    LOG.info("input:" + input + " expoString:" + expoString + " parseInt:" + Integer.parseInt(expoString));
-    String returnString = "0." + "0" + valString;
-    LOG.info("returnstring: " + returnString);
-    return input;
+    String valString = input.substring(0, indexOfE).replaceAll("\\.", "");
+    Integer exponent = Integer.parseInt(input.substring(indexOfE + 1, indexOfE + 4)) * -1;
+    String zeros = "";
+    for(int i = 0; i < exponent - 1; i++) { zeros += "0"; }
+    return "0." + zeros + valString;
   } 
 
   private void getSLRFromContent(String content){
@@ -125,8 +124,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       if(splitValues[i] != null && !splitValues[i].isEmpty() && splitValues[i] != "\n") {
         try {
           if(Float.parseFloat(splitValues[i]) != 0) {
-            LOG.info("adding value: (" + i + ", " + splitValues[i] + ")");
             String mapValue = normalizeFloatFormat(splitValues[i]);
+            LOG.info("adding value: (" + i + ", " + mapValue + ")");
             slrMap.put(Integer.toString(i), mapValue);
           }
             
