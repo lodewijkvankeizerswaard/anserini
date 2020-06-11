@@ -111,7 +111,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       return input;
     }
     String expoString = input.substring(indexOfE + 1, indexOfE + 4);
-    LOG.info("input:" + input + " expoString:" + expoString);
+    LOG.info("input:" + input + " expoString:" + expoString + " parseInt:" + Integer.parseInt(expoString));
     return input;
   } 
 
