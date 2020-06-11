@@ -193,6 +193,7 @@ public final class IndexCollection {
           }
 
           Document doc;
+          long startTime = System.nanoTime();
           try {
             doc = generator.createDocument(d);
           } catch (EmptyDocumentException e1) {
@@ -211,7 +212,7 @@ public final class IndexCollection {
             continue;
           }
 
-          long startTime = System.nanoTime();
+          
           if (args.uniqueDocid) {
             writer.updateDocument(new Term("id", d.id()), doc);
           } else {
@@ -222,15 +223,12 @@ public final class IndexCollection {
           batch++;
           avgTime += endTime - startTime;
 
-          if (batch % 100 == 0 ) {
-            LOG.info("Average doc time: " + avgTime / 100);
-            avgTime = 0;
-          }
-
           // And the counts from this batch, reset batch counter.
           if (batch % 10000 == 0) {
+            LOG.info("Average doc time: " + avgTime / 10000);
             counters.indexed.addAndGet(batch);
             batch = 0;
+            avgTime = 0;
           }
         }
 
