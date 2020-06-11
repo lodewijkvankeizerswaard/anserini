@@ -101,14 +101,31 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     
   }
 
+  private String normalizeFloatFormat(String input) {
+    Integer indexOfE = -1;
+    try {
+      indexOfE = input.indexOf('E');
+    } catch(Exception e) { }
+
+    if(indexOfE == -1) {
+      return input;
+    } else {
+      String expoString = input.substring(indexOfE + 1, indexOfE + 2);
+      LOG.info("input:" + input + " expoString:" + expoString);
+    }
+  }
+
   private void getSLRFromContent(String content){
     slrMap.clear();
     String[] splitValues = content.split("\\t");
     for(int i = 0; i < splitValues.length; i++) {
       if(splitValues[i] != null && !splitValues[i].isEmpty() && splitValues[i] != "\n") {
         try {
-          if(Float.parseFloat(splitValues[i]) != 0)
-            slrMap.put(Integer.toString(i), splitValues[i]);
+          if(Float.parseFloat(splitValues[i]) != 0) {
+            String mapValue = normalizeFloatFormat(splitValues[i]);
+            slrMap.put(Integer.toString(i), mapValue);
+          }
+            
         } catch(Exception e) { }
       }  
     }

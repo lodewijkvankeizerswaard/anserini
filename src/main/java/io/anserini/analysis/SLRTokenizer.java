@@ -178,13 +178,13 @@ public class SLRTokenizer extends Tokenizer{
         return -1;
     }
 
-    private int valueHasExponent(char[] buffer) {
-        for(int i = 0; i < buffer.length; i++) {
-            if(buffer[i] == 'E') 
-                return i;
-        }
-        return -1;
-    }
+    // private int valueHasExponent(char[] buffer) {
+    //     for(int i = 0; i < buffer.length; i++) {
+    //         if(buffer[i] == 'E') 
+    //             return i;
+    //     }
+    //     return -1;
+    // }
 
     private void getSLRToken(char[] buffer) {
         int valStart = getSLRDotPos(buffer) - 1;
@@ -196,24 +196,23 @@ public class SLRTokenizer extends Tokenizer{
 
     private void getSLRValue(char[] buffer) {
         int decimalStart = getSLRDotPos(buffer) + 1;
-        int exponentStart = valueHasExponent(buffer);
-        LOG.info("input: " + String.valueOf(buffer) + " Expo start: " + exponentStart);
-        if(exponentStart == -1) {
+        // int exponentStart = valueHasExponent(buffer);
+        // if(exponentStart == -1) {
             for(int i = 0; i < valueBuffer.length; i++) {
                 valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
             }
-        } else {
-            char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
-            String exponentStr = String.valueOf(exponentChar);
-            LOG.info("input:" + String.valueOf(buffer) + " expoStart:" + exponentStart + " expo:" + exponentStr);
-            Integer exponent = Integer.parseInt(exponentStr);
+        // } else {
+        //     char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
+        //     String exponentStr = String.valueOf(exponentChar);
+        //     LOG.info("input:" + String.valueOf(buffer) + " expoStart:" + exponentStart + " expo:" + exponentStr);
+        //     Integer exponent = Integer.parseInt(exponentStr);
             
 
-            for(int i = 0; i < tokenBuffer.length; i++) {
-                tokenBuffer[i] = (i < exponent - 1) ? '0' : buffer[i - exponent - 1];
-            }
-            LOG.info(String.valueOf(tokenBuffer));
-        }
+        //     for(int i = 0; i < tokenBuffer.length; i++) {
+        //         tokenBuffer[i] = (i < exponent - 1) ? '0' : buffer[i - exponent - 1];
+        //     }
+        //     LOG.info(String.valueOf(tokenBuffer));
+        // }
     }
     
     @Override
