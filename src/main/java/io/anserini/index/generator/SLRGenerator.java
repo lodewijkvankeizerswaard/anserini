@@ -104,8 +104,8 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
   private String normalizeFloatFormat(String input) {
     Integer indexOfE = -1;
     try {
-      indexOfE = input.indexOf("E");
-    } catch(Exception e) { LOG.info(input + " has no E"); }
+      indexOfE = input.indexOf("e");
+    } catch(Exception e) { LOG.info(input + " has no e"); }
 
     if(indexOfE == -1) {
       return input;
