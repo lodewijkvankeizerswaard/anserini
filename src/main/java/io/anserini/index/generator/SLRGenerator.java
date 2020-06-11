@@ -234,7 +234,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     // Are we making a neural or traditional index?
     if(args.slrIndex) {
       String sparseRep = slrToContent();
-      LOG.info(sparseRep);
       document.add(new Field(IndexArgs.CONTENTS, sparseRep, fieldType));
     } else {
       document.add(new Field(IndexArgs.CONTENTS, contents, fieldType));
