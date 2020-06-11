@@ -122,6 +122,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       if(splitValues[i] != null && !splitValues[i].isEmpty() && splitValues[i] != "\n") {
         try {
           if(Float.parseFloat(splitValues[i]) != 0) {
+            LOG.info("adding value: (" + i + ", " + splitValues[i] + ")");
             String mapValue = normalizeFloatFormat(splitValues[i]);
             slrMap.put(Integer.toString(i), mapValue);
           }
