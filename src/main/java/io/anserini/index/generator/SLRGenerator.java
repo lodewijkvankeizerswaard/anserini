@@ -109,11 +109,11 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
     if(indexOfE == -1) {
       return input;
-    } else {
-      String expoString = input.substring(indexOfE + 1, indexOfE + 2);
-      LOG.info("input:" + input + " expoString:" + expoString);
     }
-  }
+    String expoString = input.substring(indexOfE + 1, indexOfE + 2);
+    LOG.info("input:" + input + " expoString:" + expoString);
+    return input;
+  } 
 
   private void getSLRFromContent(String content){
     slrMap.clear();
