@@ -175,9 +175,7 @@ public final class SearchCollection implements Closeable {
           } else if (args.backgroundlinking) {
             docs = searchBackgroundLinking(this.searcher, qid, queryString, cascade);
           } else {
-            LOG.info("executing search function (searcher, thread_id, queryString, cascade)");
             docs = search(this.searcher, qid, queryString, cascade);
-            LOG.info("search function complete");
           }
 
           /*

@@ -76,7 +76,7 @@ public class SLRQuery extends TermQuery{
 
         @Override
         public String toString() {
-            return "weight(" + SLRQuery.this + ")";
+            return "weight(" + SLRQuery.this + "," + activationValue + ")";
         }
 
         @Override
