@@ -191,7 +191,7 @@ public final class SearchCollection implements Closeable {
                 docs.documents[i].getField(IndexArgs.ID).stringValue(), (i + 1), docs.scores[i], runTag));
           }
           cnt++;
-          if (cnt % 100 == 0) {
+          if (cnt % 1 == 0) {
             LOG.info(String.format("%d queries processed", cnt));
           }
         }
