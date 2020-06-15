@@ -475,8 +475,11 @@ public final class SearchCollection implements Closeable {
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits, BREAK_SCORE_TIES_BY_DOCID, true);
       }
     }
-
-    List<String> queryTokens = AnalyzerUtils.analyze(analyzer, queryString);
+    List<String> queryTokens = new ArrayList<String>();
+    queryTokens.add("not-using");
+    if(!args.slr){
+      queryTokens = AnalyzerUtils.analyze(analyzer, queryString);
+    }
     RerankerContext context = new RerankerContext<>(searcher, qid, query, null, queryString, queryTokens, null, args);
 
     return cascade.run(ScoredDocuments.fromTopDocs(rs, searcher), context);
