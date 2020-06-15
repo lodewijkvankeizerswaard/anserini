@@ -191,7 +191,7 @@ public final class IndexCollection {
           }
 
           Document doc;
-          long startTime = System.nanoTime();
+
           try {
             doc = generator.createDocument(d);
           } catch (EmptyDocumentException e1) {
