@@ -149,7 +149,6 @@ public class SLRTokenizer extends Tokenizer{
             }
 
             if (scanner.yylength() <= maxTokenLength) {
-                
                 scanner.getText(termAtt);
 
                 getSLRValue(termAtt.buffer());
