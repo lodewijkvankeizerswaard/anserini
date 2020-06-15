@@ -19,6 +19,7 @@
 package io.anserini.search.latent;
 
 import io.anserini.search.query.QueryGenerator;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.BooleanClause;
@@ -34,65 +35,73 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-// IN -> 3:0.9 50:0.89 72:0.99
-// multi term query
-
 public class SLRQueryGenerator extends QueryGenerator {
     private String pythonCommand = "";
+    private Map<String, Float> slrMap;
     private static final Logger LOG = LogManager.getLogger(SLRQueryGenerator.class);
 
+    public static int SLR_TOKEN_LENGHT = 5;
+
     public SLRQueryGenerator(String pythonModel) {
-        if (pythonModel == "")
-            LOG.info("Using python model: false");
-        else
-            LOG.info("Using python model: " + pythonModel);
+        // if (pythonModel == "")
+        //     LOG.info("Using python model: false");
+        // else
+        //     LOG.info("Using python model: " + pythonModel);
         pythonCommand = pythonModel;
+
+        slrMap = new HashMap<String, Float>(10);
     }
 
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
-        Map<String, Float> querySLR = getQuerySLR(queryText);
+        if(pythonCommand != "")
+            getSLRFromModel(queryText);
+        else
+            getSLRFromQuery(queryText);
 
-        for(Map.Entry<String, Float> cursor : querySLR.entrySet()) {
+        for(Map.Entry<String, Float> cursor : slrMap.entrySet()) {
             Query q = new SLRQuery(new Term(field, cursor.getKey()), cursor.getValue());
             builder.add(q, BooleanClause.Occur.SHOULD);
-            LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
+            // LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
         }
 
         return builder.build();
     }
 
-    private Map<String, Float> getQuerySLR(String query) {
-        Map<String, Float> querySLR = new HashMap<String, Float>(query.split(" ").length); // This initial capacity only makes sense for preprocces input
-        if(pythonCommand == ""){ // preprocessed input 
-            String[] indices = query.split(" ");
-
-            for (String ind : indices) {
-                String[] keyValue = ind.split(":");
-                querySLR.put(keyValue[0].toString(), Float.parseFloat(keyValue[1].toString()));
-            }
-
-        } else { // running python model
-            String output = null;
-            try {
-
-                Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand + " -content " + query);
-                BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
-                output = stdInput.readLine();
-                if(output == null)
-                    throw new IOException("Model execution not succesfull");
-                String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
-
-                for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
-                    querySLR.put(slr[i], Float.parseFloat(slr[i + 1]));
-                }
-
-            } catch (IOException e) {
-                LOG.error("Python module could not be executed!");
-            }
+    private void getSLRFromQuery(String query) {
+        slrMap.clear();
+        String[] latentTerms = query.split("\\s");
+        
+        for (int i = 0; i < latentTerms.length ; i++) {
+            if(Float.parseFloat(latentTerms[i].toString()) != 0)
+                slrMap.put(zeroPaddingLatentTerm(Integer.toString(i)), Float.parseFloat(latentTerms[i].toString()));
         }
+    }
 
-        return querySLR;
+    private void getSLRFromModel(String query) {
+        slrMap.clear();
+        String output = null;
+        try {
+            Process pythonModel = Runtime.getRuntime().exec("python3 " + pythonCommand + " -content " + query);
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(pythonModel.getInputStream()));
+            output = stdInput.readLine();
+            if(output == null)
+                throw new IOException("Model execution not succesfull");
+            String[] slr = output.replaceAll("[\\[(),\\]]", "").split(" ");
+
+            for(int i = 0; i < Math.round(slr.length / 2); i+=2) {
+                slrMap.put(zeroPaddingLatentTerm(slr[i]), Float.parseFloat(slr[i + 1]));
+            }
+
+        } catch (IOException e) {
+            LOG.error("Python module could not be executed!");
+        }
+    }
+
+    private String zeroPaddingLatentTerm(String term) {
+        String zeros = "";
+        for(int i = 0; i < SLR_TOKEN_LENGHT - term.length(); i++) { zeros += "0"; }
+        return zeros + term;
     }
 }

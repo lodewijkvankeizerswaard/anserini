@@ -198,7 +198,7 @@ public class SearchArgs {
   // ranking model: Sparse Latent Representations
   // -------------------------------------------------------------
 
-  @Option(name = "-slr", usage = "Use SLR model for index searching. Unless -slr.py is specified input is assumed to be preprocessed: \"index-nr:value ...\"")
+  @Option(name = "-slr", usage = "Use SLR model for index searching. Unless -slr.py is specified input is assumed to be preprocessed as whitespace separated activation values")
   public boolean slr = false;
 
   @Option(name = "-slr.model", usage = "python model and arguments to obtain the query SLR. If not present, preprocessed input is assumed")
