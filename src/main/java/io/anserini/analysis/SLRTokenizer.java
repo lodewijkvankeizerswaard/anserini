@@ -54,7 +54,7 @@ public class SLRTokenizer extends Tokenizer{
     /** Absolute maximum sized token */
     public static final int MAX_TOKEN_LENGTH_LIMIT = 1024 * 1024;
     
-    public static final int SLR_TOKEN_LENGHT = 5; // up to 10000 dimensions 
+    public static final int SLR_TOKEN_LENGHT = 5; // up to 100,000 dimensions 
     
     private int skippedPositions;
 
