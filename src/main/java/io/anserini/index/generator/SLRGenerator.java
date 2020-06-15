@@ -95,7 +95,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
       usingModel = true;
       // slrModel = Module.load(args.slrModel);
     } else {
-      LOG.info("Reading representations from contents!");
+      LOG.info("Reading representations from contents.");
       usingContents = true;
     }
     
@@ -119,14 +119,18 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
 
   private void getSLRFromContent(String content){
     slrMap.clear();
-    String[] splitValues = content.split("\\t");
+    String[] splitValues = content.split("[\\t  ]");
     for(int i = 0; i < splitValues.length; i++) {
+      // LOG.info(splitValues[i]);
+      // try {
+      //   System.in.read();
+      // } catch (Exception e) {}
       if(splitValues[i] != null && !splitValues[i].isEmpty() && splitValues[i] != "\n") {
         try {
           if(Float.parseFloat(splitValues[i]) != 0) {
             String mapValue = normalizeFloatFormat(splitValues[i]);
-            LOG.info("input  value:  " + splitValues[i]);
-            LOG.info("adding value: (" + i + ", " + mapValue + ")");
+            // LOG.info("input  value:  " + splitValues[i]);
+            // LOG.info("adding value: (" + i + ", " + mapValue + ")");
             slrMap.put(Integer.toString(i), mapValue);
           }
             

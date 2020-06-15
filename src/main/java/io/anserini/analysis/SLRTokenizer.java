@@ -149,20 +149,23 @@ public class SLRTokenizer extends Tokenizer{
             }
 
             if (scanner.yylength() <= maxTokenLength) {
-                posIncrAtt.setPositionIncrement(skippedPositions+1);
+                
                 scanner.getText(termAtt);
 
                 getSLRValue(termAtt.buffer());
                 int val = Integer.parseInt(CharBuffer.wrap(valueBuffer), 0, valueBuffer.length, 10);
-                freqAtt.setTermFrequency(val);
+                if(val >= 1) {
+                    posIncrAtt.setPositionIncrement(skippedPositions+1);
+                    freqAtt.setTermFrequency(val);
 
-                getSLRToken(termAtt.buffer());
-                termAtt.copyBuffer(tokenBuffer, 0, tokenBuffer.length);
-                
-                final int start = scanner.yychar();
-                offsetAtt.setOffset(correctOffset(start), correctOffset(start+termAtt.length()));
-                typeAtt.setType(SLRTokenizer.TOKEN_TYPES[tokenType]);
-                return true;
+                    getSLRToken(termAtt.buffer());
+                    termAtt.copyBuffer(tokenBuffer, 0, tokenBuffer.length);
+                    final int start = scanner.yychar();
+                    offsetAtt.setOffset(correctOffset(start), correctOffset(start+termAtt.length()));
+                    typeAtt.setType(SLRTokenizer.TOKEN_TYPES[tokenType]);
+                    return true;
+                }                 
+                skippedPositions++;
             } else
                 // When we skip a too-long term, we still increment the
                 // position increment
@@ -178,14 +181,6 @@ public class SLRTokenizer extends Tokenizer{
         return -1;
     }
 
-    // private int valueHasExponent(char[] buffer) {
-    //     for(int i = 0; i < buffer.length; i++) {
-    //         if(buffer[i] == 'E') 
-    //             return i;
-    //     }
-    //     return -1;
-    // }
-
     private void getSLRToken(char[] buffer) {
         int valStart = getSLRDotPos(buffer) - 1;
         int zeroPaddingLenght = SLR_TOKEN_LENGHT - valStart;
@@ -196,23 +191,9 @@ public class SLRTokenizer extends Tokenizer{
 
     private void getSLRValue(char[] buffer) {
         int decimalStart = getSLRDotPos(buffer) + 1;
-        // int exponentStart = valueHasExponent(buffer);
-        // if(exponentStart == -1) {
-            for(int i = 0; i < valueBuffer.length; i++) {
-                valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
-            }
-        // } else {
-        //     char[] exponentChar = {buffer[exponentStart + 1], buffer[exponentStart + 2]};
-        //     String exponentStr = String.valueOf(exponentChar);
-        //     LOG.info("input:" + String.valueOf(buffer) + " expoStart:" + exponentStart + " expo:" + exponentStr);
-        //     Integer exponent = Integer.parseInt(exponentStr);
-            
-
-        //     for(int i = 0; i < tokenBuffer.length; i++) {
-        //         tokenBuffer[i] = (i < exponent - 1) ? '0' : buffer[i - exponent - 1];
-        //     }
-        //     LOG.info(String.valueOf(tokenBuffer));
-        // }
+        for(int i = 0; i < valueBuffer.length; i++) {
+            valueBuffer[i] = (Character.isDigit(buffer[i + decimalStart]) ) ? buffer[i + decimalStart] : '0';
+        }
     }
     
     @Override
