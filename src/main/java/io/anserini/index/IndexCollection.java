@@ -174,8 +174,6 @@ public final class IndexCollection {
         FileSegment<SourceDocument> segment = collection.createFileSegment(inputFile);
         // in order to call close() and clean up resources in case of exception
         this.fileSegment = segment;
-        
-        long avgTime = 0;
 
         for (SourceDocument d : segment) {
           if (!d.indexable()) {
@@ -193,6 +191,7 @@ public final class IndexCollection {
           }
 
           Document doc;
+          long startTime = System.nanoTime();
           try {
             doc = generator.createDocument(d);
           } catch (EmptyDocumentException e1) {

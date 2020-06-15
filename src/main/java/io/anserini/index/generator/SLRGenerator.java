@@ -127,7 +127,6 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
             String mapValue = normalizeFloatFormat(splitValues[i]);
             slrMap.put(Integer.toString(i), mapValue);
           }
-            
         } catch(Exception e) { }
       }  
     }
