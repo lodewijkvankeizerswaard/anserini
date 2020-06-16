@@ -53,7 +53,7 @@ public class SLRSimilarity extends Similarity {
 
         float queryValue = longToFloat(ts.docFreq());
     
-        return new SparRepFixed((float) activationValueDivider, queryValue);
+        return new SLRSimFixed((float) activationValueDivider, queryValue);
     }
 
     public static float longToFloat(long l) {
@@ -87,11 +87,11 @@ public class SLRSimilarity extends Similarity {
         return "SR using dotproduct";
     }
 
-    private static class SparRepFixed extends SimScorer {
+    private static class SLRSimFixed extends SimScorer {
         private final float activationValueDivider;
         private final float queryValue;
 
-        SparRepFixed(float activationValueDivider, float queryValue) {
+        SLRSimFixed(float activationValueDivider, float queryValue) {
           this.activationValueDivider = activationValueDivider;
           this.queryValue = queryValue;
         }
