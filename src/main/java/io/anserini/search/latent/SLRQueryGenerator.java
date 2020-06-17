@@ -54,6 +54,7 @@ public class SLRQueryGenerator extends QueryGenerator {
 
     @Override
     public Query buildQuery(String field, Analyzer analyzer, String queryText) {
+        BooleanQuery.setMaxClauseCount(10000);
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         if(pythonCommand != "")
             getSLRFromModel(queryText);
@@ -63,7 +64,6 @@ public class SLRQueryGenerator extends QueryGenerator {
         for(Map.Entry<String, Float> cursor : slrMap.entrySet()) {
             Query q = new SLRQuery(new Term(field, cursor.getKey()), cursor.getValue());
             builder.add(q, BooleanClause.Occur.SHOULD);
-            // LOG.info("key=" + cursor.getKey() + " value= " + cursor.getValue());
         }
 
         return builder.build();
