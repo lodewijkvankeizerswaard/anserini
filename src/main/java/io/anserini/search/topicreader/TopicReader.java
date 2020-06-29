@@ -70,7 +70,17 @@ public abstract class TopicReader<K> {
       Map.entry("topics.trec02ar-ar.txt", TrecTopicReader.class),
       Map.entry("topics.fire12bn.176-225.txt", TrecTopicReader.class),
       Map.entry("topics.fire12hi.176-225.txt", TrecTopicReader.class),
-      Map.entry("topics.fire12en.176-225.txt", TrecTopicReader.class)
+      Map.entry("topics.fire12en.176-225.txt", TrecTopicReader.class),
+      Map.entry("topics.covid-round1.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round1-udel.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round2.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round2-udel.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round3.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round3-udel.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round4.xml", CovidTopicReader.class),
+      Map.entry("topics.covid-round4-udel.xml", CovidTopicReader.class),
+      Map.entry("topics.backgroundlinking18.txt", BackgroundLinkingTopicReader.class),
+      Map.entry("topics.backgroundlinking19.txt", BackgroundLinkingTopicReader.class)
   );
 
   /**
@@ -79,7 +89,7 @@ public abstract class TopicReader<K> {
    * @param file topics file
    * @return the {@link TopicReader} class corresponding to a known topics file, or <code>null</code> if unknown.
    */
-  public static Class<? extends TopicReader> getTopicReaderByFile(String file) {
+  public static Class<? extends TopicReader> getTopicReaderClassByFile(String file) {
     // If we're given something that looks like a path with directories, pull out only the file name at the end.
     if (file.contains("/")) {
       String[] parts = file.split("/");
@@ -102,7 +112,7 @@ public abstract class TopicReader<K> {
    * topic fields "title", "description", and "narrative". For topic formats that do not provide this three-way
    * elaboration, the "title" key is used to hold the "query".
    *
-   * @return a sorted map of ids to topics
+   * @return sorted map of ids to topics
    * @throws IOException if error encountered reading topics
    */
   public SortedMap<K, Map<String, String>> read() throws IOException {
@@ -123,7 +133,7 @@ public abstract class TopicReader<K> {
    *
    * @param topics topics
    * @param <K> type of topic id
-   * @return a set of evaluation topics
+   * @return evaluation topics
    */
   @SuppressWarnings("unchecked")
   public static <K> SortedMap<K, Map<String, String>> getTopics(Topics topics) {
@@ -143,12 +153,31 @@ public abstract class TopicReader<K> {
   }
 
   /**
-   * Returns a standard set of evaluation topics, with strings as topic ids. This method is
-   * primarily meant for calling from Python via Pyjnius. The conversion to string topic ids
-   * is necessary because Pyjnius has trouble with generics.
+   * Returns a set of evaluation topics, automatically trying to infer its type and format.
+   *
+   * @param file topics file
+   * @param <K> type of topic id
+   * @return evaluation topics
+   */
+  @SuppressWarnings("unchecked")
+  public static <K> SortedMap<K, Map<String, String>> getTopicsByFile(String file) {
+    try {
+      // Get the constructor
+      Constructor[] ctors = getTopicReaderClassByFile(file).getDeclaredConstructors();
+      // The one we want is always the zero-th one; pass in a dummy Path.
+      TopicReader<K> reader = (TopicReader<K>) ctors[0].newInstance(Paths.get(file));
+      return reader.read();
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns a standard set of evaluation topics, with strings as topic ids. This method is primarily meant for calling
+   * from Python via Pyjnius. The conversion to string topic ids is necessary because Pyjnius has trouble with generics.
    *
    * @param topics topics
-   * @return a set of evaluation topics, with strings as topic ids
+   * @return evaluation topics, with strings as topic ids
    */
   public static Map<String, Map<String, String>> getTopicsWithStringIds(Topics topics) {
     SortedMap<?, Map<String, String>> originalTopics = getTopics(topics);
@@ -161,5 +190,35 @@ public abstract class TopicReader<K> {
     }
 
     return t;
+  }
+
+  /**
+   * Returns a set of evaluation topics, reading from a file using a particular {@code TopicReader} class (as String).
+   * This ridiculous method name is necessary for proper Python bindings via Pyjnius.
+   *
+   * @param className {@code TopicReader} class
+   * @param file topics file
+   * @return evaluation topics, with strings as topic ids
+   */
+  public static Map<String, Map<String, String>> getTopicsWithStringIdsFromFileWithTopicReaderClass(String className,
+                                                                                                    String file) {
+    try {
+      Class clazz = Class.forName(className);
+      Constructor[] ctors = clazz.getDeclaredConstructors();
+      TopicReader<?> reader = (TopicReader<?>) ctors[0].newInstance(Paths.get(file));
+
+      SortedMap<?, Map<String, String>> originalTopics = reader.read();
+      if (originalTopics == null)
+        return null;
+
+      Map<String, Map<String, String>> t = new HashMap<>();
+      for (Object key : originalTopics.keySet()) {
+        t.put(key.toString(), originalTopics.get(key));
+      }
+
+      return t;
+    } catch (Exception e) {
+      return null;
+    }
   }
 }
