@@ -32,7 +32,7 @@ import io.anserini.index.generator.LuceneDocumentGenerator;
 import io.anserini.index.generator.SkippedDocumentException;
 import io.anserini.index.generator.WashingtonPostGenerator;
 import io.anserini.search.similarity.AccurateBM25Similarity;
-import io.anserini.search.similarity.SLRSimilarity;
+import io.anserini.search.latent.SLRSimilarity;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;

@@ -73,6 +73,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.anserini.search.latent.SLRQueryGenerator;
+import io.anserini.search.latent.SLRSimilarity;
+
 /**
  * Class that exposes basic search functionality, designed specifically to provide the bridge between Java and Python
  * via pyjnius.
@@ -205,6 +208,14 @@ public class SimpleSearcher implements Closeable {
     searcher.setSimilarity(similarity);
   }
 
+  public void setSimilarity(int p) {
+    this.similarity = new SLRSimilarity(p);
+
+    // We need to re-initialize the searcher
+    searcher = new IndexSearcher(reader);
+    searcher.setSimilarity(similarity);
+  }
+
   @Override
   public void close() throws IOException {
     reader.close();
@@ -293,6 +304,21 @@ public class SimpleSearcher implements Closeable {
 
   public Result[] search(String q, int k, long t) throws IOException {
     Query query = new BagOfWordsQueryGenerator().buildQuery(IndexArgs.CONTENTS, analyzer, q);
+    List<String> queryTokens = AnalyzerUtils.analyze(analyzer, q);
+
+    return search(query, queryTokens, q, k, t);
+  }
+
+  public Result[] search_slr(String q) throws IOException {
+    return search_slr(q, 10);
+  }
+
+  public Result[] search_slr(String q, int k) throws IOException {
+    return search_slr(q, k, -1);
+  }
+
+  public Result[] search_slr(String q, int k, long t) throws IOException {
+    Query query = new SLRQueryGenerator("").buildQuery(IndexArgs.CONTENTS, analyzer, q);
     List<String> queryTokens = AnalyzerUtils.analyze(analyzer, q);
 
     return search(query, queryTokens, q, k, t);

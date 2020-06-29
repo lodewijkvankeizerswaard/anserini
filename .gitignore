@@ -6,6 +6,7 @@ target/
 bin/
 eval/trec_eval.9.0.4/
 eval/ndeval/ndeval
+eval/slr/.ipynb_checkpoints
 src/test/test-index*
 *~
 *.iml
@@ -34,6 +35,9 @@ src/main/resources/topics-and-qrels/qrels.mb13.all.txt
 # datasets
 data/*
 data-results/*
+collections/*
+index/*
+results/*
 
 # vscode related files
 .vscode
@@ -43,5 +47,3 @@ data-results/*
 # elastirini and solrini installation
 solrini/
 elastirini/
-eval/slr/Untitled.ipynb
-eval/slr/.ipynb_checkpoints/Untitled-checkpoint.ipynb

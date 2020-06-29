@@ -2,9 +2,10 @@ import json
 from pathlib import Path
 
 input_folder = "data/"
-input_file = "dummy_slr_robust04.tsv"
-output_folder = "data/robust04_json/"
-docs_per_file = 100000
+input_file = "zipfian_robust04_sparse_doc_reprs.txt"
+output_folder = "collections/zipfian_robust04_slr/"
+
+docs_per_file = 50000
 
 Path(output_folder).mkdir(parents=True, exist_ok=True)
 

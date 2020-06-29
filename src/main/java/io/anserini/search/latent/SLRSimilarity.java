@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.anserini.search.similarity;
+package io.anserini.search.latent;
 
 import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.index.IndexOptions;

@@ -104,7 +104,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import java.util.Vector;
-import io.anserini.search.similarity.SLRSimilarity;
+import io.anserini.search.latent.SLRSimilarity;
 import io.anserini.search.latent.SLRQueryGenerator;
 import io.anserini.search.latent.SparseLatentQuery;
 
@@ -167,6 +167,7 @@ public final class SearchCollection implements Closeable {
         final long start = System.nanoTime();
         PrintWriter out = new PrintWriter(Files.newBufferedWriter(Paths.get(outputPath), StandardCharsets.US_ASCII));
         for (Map.Entry<K, Map<String, String>> entry : topics.entrySet()) {
+          final long startQueryTime = System.nanoTime();
           K qid = entry.getKey();
           String queryString = entry.getValue().get(args.topicfield);
           ScoredDocuments docs;
@@ -177,7 +178,9 @@ public final class SearchCollection implements Closeable {
           } else {
             docs = search(this.searcher, qid, queryString, cascade);
           }
-
+          final long endQueryTime = System.nanoTime();
+          final long queryTime = (endQueryTime - startQueryTime) / 1000;
+          LOG.info(qid.toString() + " " + queryTime + "ms" );
           /*
            * the first column is the topic number.
            * the second column is currently unused and should always be "Q0".
@@ -191,7 +194,7 @@ public final class SearchCollection implements Closeable {
                 docs.documents[i].getField(IndexArgs.ID).stringValue(), (i + 1), docs.scores[i], runTag));
           }
           cnt++;
-          if (cnt % 1 == 0) {
+          if (cnt % 100 == 0) {
             LOG.info(String.format("%d queries processed", cnt));
           }
         }
@@ -475,11 +478,8 @@ public final class SearchCollection implements Closeable {
         rs = searcher.search(query, isRerank ? args.rerankcutoff : args.hits, BREAK_SCORE_TIES_BY_DOCID, true);
       }
     }
-    List<String> queryTokens = new ArrayList<String>();
-    queryTokens.add("not-using");
-    if(!args.slr){
-      queryTokens = AnalyzerUtils.analyze(analyzer, queryString);
-    }
+
+    List<String> queryTokens = AnalyzerUtils.analyze(analyzer, queryString);
     RerankerContext context = new RerankerContext<>(searcher, qid, query, null, queryString, queryTokens, null, args);
 
     return cascade.run(ScoredDocuments.fromTopDocs(rs, searcher), context);
