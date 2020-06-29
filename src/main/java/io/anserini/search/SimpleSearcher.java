@@ -328,7 +328,7 @@ public class SimpleSearcher implements Closeable {
     searcher.setSimilarity(similarity);
   }
 
-  public void setSimilarity(int p) {
+  public void setSLR(int p) {
     this.similarity = new SLRSimilarity(p);
 
     // We need to re-initialize the searcher
