@@ -483,20 +483,20 @@ public class SimpleSearcher implements Closeable {
     return search(query, queryTokens, q, k);
   }
 
-  // public Result[] search_slr(String q) throws IOException {
-  //   return search_slr(q, 10);
-  // }
+  public Result[] search_slr(String q) throws IOException {
+    return search_slr(q, 10);
+  }
 
-  // public Result[] search_slr(String q, int k) throws IOException {
-  //   return search_slr(q, k, -1);
-  // }
+  public Result[] search_slr(String q, int k) throws IOException {
+    return search_slr(q, k, -1);
+  }
 
-  // public Result[] search_slr(String q, int k, long t) throws IOException {
-  //   Query query = new SLRQueryGenerator("").buildQuery(IndexArgs.CONTENTS, analyzer, q);
-  //   List<String> queryTokens = AnalyzerUtils.analyze(analyzer, q);
+  public Result[] search_slr(String q, int k, long t) throws IOException {
+    Query query = new SLRQueryGenerator("").buildQuery(IndexArgs.CONTENTS, analyzer, q);
+    LOG.info("Using SLR function");
 
-  //   return search(query, queryTokens, q, k);
-  // }
+    return search(query, null, null, k);
+  }
 
   /**
    * Searches the collection with a pre-constructed Lucene {@link Query}.
