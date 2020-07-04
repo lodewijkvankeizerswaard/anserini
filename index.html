@@ -1,18 +1,35 @@
 <!doctype html>
-<title>Site Maintenance</title>
+<title>Demo Live Neural Document Ranking</title>
 <style>
   body { text-align: center; padding: 150px; }
-  h1 { font-size: 50px; }
-  body { font: 20px Helvetica, sans-serif; color: #333; }
-  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; padding-top: 30px; padding-bottom: 10px;}
+  footer {font: 20px Helvetica, sans-serif; color: #333; padding-top: 30px; padding-bottom: 10px; text-align: left; width: 90%; margin: 0 auto; font-size: medium;}
+  article { display: block; text-align: left; width: 90%; margin: 0 auto; font-size: medium;}
+  .video { width: 80%; margin: auto; margin-top: 20px; text-align: center;}
   a { color: #dc8100; text-decoration: none; }
   a:hover { color: #333; text-decoration: none; }
 </style>
 
 <article>
-    <h1>Under Maintenance</h1>
-    <div>
-        <p>Sorry for the inconvenience but the development of a standalone neural ranking model using sparse latent representations is taking longer than expected. The main issue at the moment is the integration of Anserini into a python webservice (using a custom version of pyserini). This project should not take longer than a couple of days.  If you need to, you can always <a href="mailto:lodewijk.vankeizerswaard@gmail.com">send an email</a>. <i>Last update: Monday 29th June 2020</i></p>
-        <p>&mdash; Lodewijk van Keizerswaard</p>
-    </div>
+    <h1>Demonstration off neural document ranking</h1>
+    The video below shows a live search engine, based on <a href="https://github.com/castorini/anserini">Anserini</a>, for two standalone neural ranking models that use sparse latent representations.
+    The implementation can be found on the <a href="https://github.com/lodewijkvkeizerswaard/anserini/">github repository</a> accompanying this page.
+    The Sparse Model is based on <a href="https://doi.org/10.1145/3269206.3271800">[Zamani et al., 2018]</a> and the Random Zipfian Model uses random document and query representations with a Zipfian latent term frequency distribution.
+    More information on why these two models are compared here can be found in my thesis <span style="color: gray"><i>(reference may be added later)</i></span>. 
+    <br>
+    <div class="video">
+    <video width="100%" controls>
+      <source src="anserini_slr_demo_video.mp4" type="video/mp4">
+      <source src="anserini_slr_demo_video.ogg" type="video/ogg">
+      Your browser does not support the video tag.
+    </video> 
+    <span style="color: gray;">No sound</span>
+  </div>
 </article>
+
+<footer>
+  <h1>About</h1>
+  This search engine was created by Lodewijk van Keizerswaard, in colaberation with Tijmen van Etten, Roel Klein and Felix Rustemeyer, as part of a bachelor thesis at the University of Amsterdam.
+  Jaap Kamps, David Rau and Nikos Kondylidis supervised this project.
+</footer>
