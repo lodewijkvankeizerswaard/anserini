@@ -1,0 +1,30 @@
+15 jul 2020:
+------------
+To reimplement the indexing and searching of sparse vectors a new field has to be chosen. A <Integer, Double> field would probabily be optimal. A description of some options from Lucene:
+- making a DoublePoint field. This is a field optimized for ranged search. Multiple values are supported but sparsity is not a core aspect of this design
+- making N DoublePoint fields. This would resolve the problem of sparsity, but I have no idea wether searching thousands of field is efficient.
+- Integer, Long and Floating point fields seem worse than the DoublePoint field, so these are skipped.
+- XYDocValuesField could store all activation values in one field, but this field has unwanted properties/functionality, such as sorting by distance. This class could serve as a basis for a <Integer, Double> field.
+- XYPointField. Similar to the XYDocValuesField. Opitmized for matching points in 2D figures. This is not neseccaraly wanted.
+
+"See the {@link org.apache.lucene.document.Field} implementation of {@link org.apache.lucene.index.IndexableField} for specifics on these properties (like indexed, tokenized, stored, etc.)"
+
+A FieldType describes the properties of a field: stored, tokenized, ..., etc.. We first have to implement a FieldType, I think. Wrong, we can use a static FieldType setting the desired properties statically. Let's copy the XYPointField as a template into a new sparse vector package (sv).
+
+14:58. A XYPointField is not the right template. The matching should be done on a 1D line, like a IntPointField, where the activation value is stored per point. The new template will thus be a IntPointField.
+
+15:56. Creating a new base DocumentGenerator that will utilize the new field. This enables testing.
+
+17:03. Finished implementing the new Generator class. Now a testing setup needs to be created to index a very simple collection
+
+17:22. When indexing the mock collection, an error gets thrown: "Field must have either TokenStream, String, Reader or Number value; got indexed,tokenized indexOptions=DOCS<sv:>" I cannot find why fieldsData is not enough. Maybe the pack function of the IntPoint class has to be copied, to store the HashMap as a BytesRef. 
+
+17:27. The sv was not put into fieldsdata. Trying this instead. Resolved.
+
+16 jul 2020:
+------------
+11:30 Removing the HashMap from the implementation and working directly with the bytes
+
+12:11 Overriding the tokenStream function. This will contain the binairy rep. of the Map.Entry key values.
+
+13:58 By setting the tokenized value to false, the indexing now succedes. Trying to figure out what the actual values are in the index
