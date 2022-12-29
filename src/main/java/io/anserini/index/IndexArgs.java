@@ -26,6 +26,9 @@ public class IndexArgs {
   // This is the name of the field in the Lucene document that should be searched by default.
   public static final String CONTENTS = "contents";
 
+  // This is the name of the field in the Lucene document that contains sparse vectors.
+  public static final String SV = "sv";
+
   // This is the name of the field in the Lucene document where the raw document is stored.
   public static final String RAW = "raw";
 

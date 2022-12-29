@@ -210,7 +210,7 @@ public class SLRGenerator<T extends SourceDocument> implements LuceneDocumentGen
     document.add(new SortedDocValuesField(IndexArgs.ID, new BytesRef(id)));
 
     FieldType fieldType = new FieldType();
-    fieldType.setStored(args.storeContents); // TODO what does this exactly!!
+    fieldType.setStored(args.storeContents);
 
     // Are we storing document vectors?
     if (args.storeDocvectors) {
